@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SME EasyBooks Pro 极简智能企业做账系统 v15 (商业发行版)</title>
+  <meta name="description" content="专为独资企业 (Enterprise)、自雇人士、诊所及中小微企业量身定制的单文件本地财务核算系统。内置银行流水核对、复式记账、自动生成 P&L 与 Balance Sheet。" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; color: #0F172A; }
+    .tab.active { background: #0F172A; color: #FFFFFF; font-weight: 600; }
+    .card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 1rem; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); }
+    .input-box { width: 100%; border: 1px solid #CBD5E1; border-radius: 0.65rem; padding: 0.6rem 0.75rem; background: #FFFFFF; font-size: 0.875rem; transition: border-color 0.2s; }
+    .input-box:focus { border-color: #2563EB; outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+    .btn { padding: 0.6rem 1rem; border-radius: 0.65rem; border: 1px solid #CBD5E1; background: #FFFFFF; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; cursor: pointer; }
+    .btn:hover { background: #F1F5F9; }
+    .btn-dark { background: #0F172A; color: #FFFFFF; border-color: #0F172A; }
+    .btn-dark:hover { background: #1E293B; }
+    .btn-primary { background: #2563EB; color: #FFFFFF; border-color: #2563EB; }
+    .btn-primary:hover { background: #1D4ED8; }
+    .btn-green { background: #059669; color: #FFFFFF; border-color: #059669; }
+    .btn-green:hover { background: #047857; }
+    .btn-red { background: #DC2626; color: #FFFFFF; border-color: #DC2626; }
+    .btn-red:hover { background: #B91C1C; }
+    .money { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .muted { color: #64748B; }
+    .report-sheet { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 1rem; padding: 2rem; }
+    .report-header { text-align: center; border-bottom: 2px solid #0F172A; padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
+    @media print {
+      .no-print, nav, header { display: none !important; }
+      body { background: #FFFFFF; color: #000000; padding: 0; }
+      .card, .report-sheet { border: none; box-shadow: none; padding: 0; }
+      .view { display: block !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 sm:p-6 lg:p-8">
+
+  <div class="max-w-7xl mx-auto w-full">
+    
+    <!-- Top Header -->
+    <header class="no-print mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between pb-4 border-b border-slate-200">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">v15 Commercial Pro</span>
+          <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">
+            <span id="displayCompanyName">MY ENTERPRISE</span> 智能会计做账系统
+          </h1>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">
+          专为小微企业与自由职业者打造 · 100% 浏览器本地运行 · 隐私零泄露 · 区分现金流与会计损益
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button class="btn text-xs" onclick="exportBackupJSON()">💾 下载数据备份 (JSON)</button>
+        <label class="btn text-xs cursor-pointer">
+          📂 恢复备份
+          <input type="file" id="importJsonInput" class="hidden" accept=".json" onchange="importBackupJSON(event)" />
+        </label>
+        <button class="btn btn-dark text-xs" onclick="window.print()">🖨️ 打印当前报表</button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="no-print card p-2 mb-6 flex flex-wrap gap-2">
+      <button class="tab active btn" onclick="switchView('dashboardView', this)">📊 经营看板</button>
+      <button class="tab btn" onclick="switchView('entryView', this)">➕ 记账录入</button>
+      <button class="tab btn" onclick="switchView('bankView', this)">🏦 银行流水明细</button>
+      <button class="tab btn" onclick="switchView('journalView', this)">📖 日记账 (Journal)</button>
+      <button class="tab btn" onclick="switchView('plView', this)">📈 损益表 (P&L)</button>
+      <button class="tab btn" onclick="switchView('bsView', this)">⚖️ 资产负债表 (Balance Sheet)</button>
+      <button class="tab btn" onclick="switchView('reimburseView', this)">🧾 个人垫付与报销</button>
+      <button class="tab btn" onclick="switchView('settingsView', this)">⚙️ 系统设置与科目</button>
+    </nav>
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="dashboardView" class="view space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-5">
+          <div class="text-xs font-semibold uppercase text-slate-400">银行账面可用余额 (Bank Balance)</div>
+          <div id="cardBankBalance" class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 money">RM 0.00</div>
+          <div class="text-xs text-slate-500 mt-2">基于实际进出流水累计计算</div>
+        </div>
+
+        <div class="card p-5">
+          <div class="text-xs font-semibold uppercase text-slate-400">本年累计总营业收入 (Revenue)</div>
+          <div id="cardAnnualRevenue" class="text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-2 money">RM 0.00</div>
+          <div class="text-xs text-slate-500 mt-2">主营业务与销售收入汇总</div>
+        </div>
+
+        <div class="card p-5">
+          <div class="text-xs font-semibold uppercase text-slate-400">本年累计净利润 (Net Profit)</div>
+          <div id="cardAnnualProfit" class="text-2xl sm:text-3xl font-extrabold text-blue-600 mt-2 money">RM 0.00</div>
+          <div class="text-xs text-slate-500 mt-2">收入扣减销货成本与各项费用</div>
+        </div>
+
+        <div class="card p-5">
+          <div class="text-xs font-semibold uppercase text-slate-400">待对账未清流水 (Pending Items)</div>
+          <div id="cardPendingCount" class="text-2xl sm:text-3xl font-extrabold text-amber-600 mt-2 money">0 笔</div>
+          <div class="text-xs text-slate-500 mt-2">需核对发票或银行对账单</div>
+        </div>
+      </div>
+
+      <!-- Monthly Summary Table -->
+      <div class="card p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-4">月度收支与会计损益汇总 (Monthly Overview)</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
+              <tr>
+                <th class="p-3">月份 (Month)</th>
+                <th class="p-3 money text-emerald-600">现金流入 (Cash In)</th>
+                <th class="p-3 money text-rose-600">现金流出 (Cash Out)</th>
+                <th class="p-3 money">净现金流 (Net Cash)</th>
+                <th class="p-3 money font-bold text-blue-600">会计净利润 (P&L)</th>
+              </tr>
+            </thead>
+            <tbody id="monthlySummaryTbody" class="divide-y divide-slate-200">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. TRANSACTION ENTRY VIEW -->
+    <section id="entryView" class="view hidden">
+      <div class="max-w-2xl mx-auto card p-6 sm:p-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-2">➕ 新增业务收支记账</h2>
+        <p class="text-xs text-slate-500 mb-6">输入单笔交易信息，系统将自动生成银行流水与复式会计日记账。</p>
+
+        <form id="entryForm" onsubmit="handleSaveEntry(event)" class="space-y-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">交易日期 (Date)</label>
+              <input type="date" id="entryDate" class="input-box" required />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">交易类型 (Type)</label>
+              <select id="entryType" class="input-box" onchange="updateAccountOptions()" required>
+                <option value="INCOME">收入 (Income / Sales)</option>
+                <option value="EXPENSE" selected>日常支出 / 费用 (Expense)</option>
+                <option value="ASSET">固定资产 / 资本支出 (Asset Purchase)</option>
+                <option value="OWNER_CAPITAL">业主注资 (Owner Capital)</option>
+                <option value="OWNER_DRAWING">业主提款 / 分红 (Owner Drawing)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">会计科目 (Account Category)</label>
+              <select id="entryCategory" class="input-box" required>
+                <!-- Populated via JS -->
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">金额 (Amount in RM)</label>
+              <input type="number" step="0.01" id="entryAmount" class="input-box text-right font-semibold" placeholder="0.00" required />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">资金账户 / 结算方式 (Payment Channel)</label>
+              <select id="entryChannel" class="input-box" required>
+                <option value="BANK" selected>商业银行账户 (Maybank / CIMB / Public)</option>
+                <option value="CASH">现金账户 (Petty Cash)</option>
+                <option value="OWNER_CLAIM">业主/员工个人代垫 (Owner Advanced)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">单据编号 / 发票号 (Ref / Invoice No)</label>
+              <input type="text" id="entryRef" class="input-box" placeholder="如：INV-2026-001" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">交易描述 / 客户或供应商 (Description)</label>
+            <input type="text" id="entryDesc" class="input-box" placeholder="例如：购买诊所办公用品 / 客户技术服务费" required />
+          </div>
+
+          <div class="pt-4 flex justify-end gap-3">
+            <button type="reset" class="btn">清空重填</button>
+            <button type="submit" class="btn btn-primary font-semibold px-6">保存交易记录</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 3. BANK TRANSACTIONS VIEW -->
+    <section id="bankView" class="view hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-slate-900">🏦 商业银行流水明细账 (Bank Transactions)</h2>
+        <div class="flex gap-2">
+          <button class="btn text-xs" onclick="exportCSV('bank')">📥 导出流水 CSV</button>
+        </div>
+      </div>
+
+      <div class="card p-4 overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="p-2.5">日期</th>
+              <th class="p-2.5">单据/发票号</th>
+              <th class="p-2.5">科目分类</th>
+              <th class="p-2.5">交易说明</th>
+              <th class="p-2.5 money text-emerald-600">流入 (Debit)</th>
+              <th class="p-2.5 money text-rose-600">流出 (Credit)</th>
+              <th class="p-2.5 money">对账余额</th>
+              <th class="p-2.5 text-center no-print">操作</th>
+            </tr>
+          </thead>
+          <tbody id="bankTbody" class="divide-y divide-slate-200">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. GENERAL JOURNAL VIEW -->
+    <section id="journalView" class="view hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-slate-900">📖 复式记账日记账 (General Journal)</h2>
+        <button class="btn text-xs" onclick="exportCSV('journal')">📥 导出日记账 CSV</button>
+      </div>
+
+      <div class="card p-4 overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="p-2.5">日期</th>
+              <th class="p-2.5">凭证号</th>
+              <th class="p-2.5">借方科目 (Debit)</th>
+              <th class="p-2.5">贷方科目 (Credit)</th>
+              <th class="p-2.5">摘要说明</th>
+              <th class="p-2.5 money">金额 (RM)</th>
+            </tr>
+          </thead>
+          <tbody id="journalTbody" class="divide-y divide-slate-200">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. PROFIT & LOSS (P&L) VIEW -->
+    <section id="plView" class="view hidden">
+      <div class="report-sheet max-w-4xl mx-auto">
+        <div class="report-header">
+          <h2 class="text-2xl font-extrabold text-slate-900" id="plCompanyName">MY ENTERPRISE</h2>
+          <h3 class="text-lg font-bold text-slate-700 mt-1">损益表 / 经营业绩表 (Statement of Profit or Loss)</h3>
+          <p class="text-xs text-slate-500 mt-1">适用会计年度：<span id="plPeriod">2026年度 (1月1日 至 12月31日)</span></p>
+        </div>
+
+        <div class="space-y-6 text-sm">
+          <!-- Revenue -->
+          <div>
+            <div class="flex justify-between font-bold text-slate-900 pb-1 border-b border-slate-300">
+              <span>一、营业收入 (Revenue / Sales)</span>
+              <span id="plTotalRevenue" class="money">RM 0.00</span>
+            </div>
+            <div id="plRevenueDetails" class="pl-4 pr-2 py-2 space-y-1 text-slate-600"></div>
+          </div>
+
+          <!-- COGS -->
+          <div>
+            <div class="flex justify-between font-bold text-slate-900 pb-1 border-b border-slate-300">
+              <span>二、销货成本 (Cost of Goods Sold - COGS)</span>
+              <span id="plTotalCOGS" class="money">- RM 0.00</span>
+            </div>
+            <div id="plCOGSDetails" class="pl-4 pr-2 py-2 space-y-1 text-slate-600"></div>
+          </div>
+
+          <!-- Gross Profit -->
+          <div class="flex justify-between font-extrabold text-slate-900 py-2 border-y-2 border-slate-900 bg-slate-50 px-3 rounded">
+            <span>毛利润 (Gross Profit)</span>
+            <span id="plGrossProfit" class="money">RM 0.00</span>
+          </div>
+
+          <!-- Operating Expenses -->
+          <div>
+            <div class="flex justify-between font-bold text-slate-900 pb-1 border-b border-slate-300">
+              <span>三、营业与管理费用 (Operating & Administrative Expenses)</span>
+              <span id="plTotalExpenses" class="money">- RM 0.00</span>
+            </div>
+            <div id="plExpensesDetails" class="pl-4 pr-2 py-2 space-y-1 text-slate-600"></div>
+          </div>
+
+          <!-- Net Profit -->
+          <div class="flex justify-between font-black text-lg py-3 border-y-4 border-double border-slate-900 bg-blue-50/50 px-3 rounded text-blue-900">
+            <span>本年度净利润 (Net Profit for the Year)</span>
+            <span id="plNetProfit" class="money">RM 0.00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. BALANCE SHEET (BS) VIEW -->
+    <section id="bsView" class="view hidden">
+      <div class="report-sheet max-w-4xl mx-auto">
+        <div class="report-header">
+          <h2 class="text-2xl font-extrabold text-slate-900" id="bsCompanyName">MY ENTERPRISE</h2>
+          <h3 class="text-lg font-bold text-slate-700 mt-1">资产负债表 (Statement of Financial Position)</h3>
+          <p class="text-xs text-slate-500 mt-1">截至日期：<span id="bsDate">2026年12月31日</span></p>
+        </div>
+
+        <div class="space-y-6 text-sm">
+          <!-- Assets -->
+          <div>
+            <div class="font-extrabold text-slate-900 text-base pb-2 border-b-2 border-slate-900">资产 (ASSETS)</div>
+            
+            <div class="mt-3">
+              <div class="font-bold text-slate-800 pb-1 border-b border-slate-200">流动资产 (Current Assets)</div>
+              <div id="bsCurrentAssets" class="pl-4 py-2 space-y-1 text-slate-600"></div>
+            </div>
+
+            <div class="mt-2">
+              <div class="font-bold text-slate-800 pb-1 border-b border-slate-200">非流动资产 (Non-Current Assets)</div>
+              <div id="bsNonCurrentAssets" class="pl-4 py-2 space-y-1 text-slate-600"></div>
+            </div>
+
+            <div class="flex justify-between font-black text-slate-900 py-2 border-y-2 border-slate-900 bg-slate-50 px-3 rounded mt-2">
+              <span>总资产 (Total Assets)</span>
+              <span id="bsTotalAssets" class="money">RM 0.00</span>
+            </div>
+          </div>
+
+          <!-- Liabilities & Equity -->
+          <div>
+            <div class="font-extrabold text-slate-900 text-base pb-2 border-b-2 border-slate-900">负债与所有者权益 (LIABILITIES & EQUITY)</div>
+
+            <div class="mt-3">
+              <div class="font-bold text-slate-800 pb-1 border-b border-slate-200">流动负债 (Current Liabilities)</div>
+              <div id="bsLiabilities" class="pl-4 py-2 space-y-1 text-slate-600"></div>
+            </div>
+
+            <div class="mt-2">
+              <div class="font-bold text-slate-800 pb-1 border-b border-slate-200">所有者权益 (Owner's Equity)</div>
+              <div id="bsEquity" class="pl-4 py-2 space-y-1 text-slate-600"></div>
+            </div>
+
+            <div class="flex justify-between font-black text-slate-900 py-2 border-y-2 border-slate-900 bg-slate-50 px-3 rounded mt-2">
+              <span>总负债与所有者权益 (Total Liabilities & Equity)</span>
+              <span id="bsTotalLiabilitiesEquity" class="money">RM 0.00</span>
+            </div>
+          </div>
+
+          <div id="bsBalanceCheck" class="text-center py-2 text-xs font-bold rounded"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. REIMBURSEMENTS VIEW -->
+    <section id="reimburseView" class="view hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-slate-900">🧾 业主与员工代垫款项管理 (Owner Reimbursements)</h2>
+      </div>
+
+      <div class="card p-4 overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="p-2.5">日期</th>
+              <th class="p-2.5">代垫人</th>
+              <th class="p-2.5">费用科目</th>
+              <th class="p-2.5">垫付事由</th>
+              <th class="p-2.5 money">垫付金额</th>
+              <th class="p-2.5 text-center">还款状态</th>
+            </tr>
+          </thead>
+          <tbody id="reimburseTbody" class="divide-y divide-slate-200">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 8. SETTINGS VIEW -->
+    <section id="settingsView" class="view hidden">
+      <div class="max-w-2xl mx-auto card p-6 space-y-6">
+        <h2 class="text-xl font-bold text-slate-900">⚙️ 企业基本信息与科目设置</h2>
+
+        <div class="space-y-4 text-sm">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">企业全称 (Company Name)</label>
+            <input type="text" id="settingCompanyName" class="input-box" value="MY ENTERPRISE" onchange="saveSettings()" />
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">会计币种 (Currency)</label>
+            <input type="text" id="settingCurrency" class="input-box" value="RM" readonly />
+          </div>
+
+          <div class="pt-4 border-t border-slate-200">
+            <h3 class="font-bold text-slate-900 mb-2">危险区域 (Danger Zone)</h3>
+            <button class="btn btn-red text-xs" onclick="resetToSampleData()">重置为演示账套 (Reset to Demo)</button>
+            <button class="btn btn-red text-xs ml-2" onclick="clearAllData()">清空所有数据 (Clear All)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // --- STATE MANAGEMENT ---
+    const STORAGE_KEY = 'SME_EASYBOOKS_DATA_V15';
+
+    const DEFAULT_DATA = {
+      companyName: 'MY ENTERPRISE',
+      transactions: [
+        { id: 1, date: '2026-01-05', type: 'OWNER_CAPITAL', category: '实收资本 (Owner Capital)', desc: '业主初始投入营运资金', amount: 10000.00, channel: 'BANK', ref: 'CAP-001' },
+        { id: 2, date: '2026-01-10', type: 'INCOME', category: '主营销售收入 (Sales Revenue)', desc: '首批产品与服务销售收入', amount: 6500.00, channel: 'BANK', ref: 'INV-2026-01' },
+        { id: 3, date: '2026-01-15', type: 'EXPENSE', category: '办公室/店面租金 (Rental)', desc: '1月份办公室租金', amount: 1800.00, channel: 'BANK', ref: 'RENT-01' },
+        { id: 4, date: '2026-01-20', type: 'EXPENSE', category: '水电与网络费 (Utilities & Internet)', desc: '商业宽带与电费', amount: 350.00, channel: 'BANK', ref: 'UTIL-01' },
+        { id: 5, date: '2026-02-08', type: 'INCOME', category: '主营销售收入 (Sales Revenue)', desc: '2月份咨询与诊所服务收入', amount: 8200.00, channel: 'BANK', ref: 'INV-2026-02' },
+        { id: 6, date: '2026-02-14', type: 'EXPENSE', category: '办公耗材与耗损 (Supplies)', desc: '打印耗材与文具购买', amount: 120.00, channel: 'OWNER_CLAIM', ref: 'EXP-02' }
+      ]
+    };
+
+    let appData = loadData();
+
+    function loadData() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+      } catch (e) {
+        return JSON.parse(JSON.stringify(DEFAULT_DATA));
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      renderApp();
+    }
+
+    function fmt(val) {
+      return 'RM ' + Number(val || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // --- UI NAVIGATION ---
+    function switchView(viewId, tabBtn) {
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(viewId).classList.remove('hidden');
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      if (tabBtn) tabBtn.classList.add('active');
+    }
+
+    function updateAccountOptions() {
+      const type = document.getElementById('entryType').value;
+      const catSelect = document.getElementById('entryCategory');
+      catSelect.innerHTML = '';
+
+      const categories = {
+        INCOME: ['主营销售收入 (Sales Revenue)', '技术咨询费 (Consulting Fee)', '其他营业收入 (Other Income)'],
+        EXPENSE: ['办公室/店面租金 (Rental)', '员工薪资 (Salaries & EPF/SOCSO)', '水电与网络费 (Utilities & Internet)', '办公耗材与耗损 (Supplies)', '广告与营销费 (Marketing & Ads)', '交通与差旅 (Travel & Transport)', '专业服务费 (Accounting/Legal Fee)', '银行手续费 (Bank Charges)'],
+        ASSET: ['电子设备与电脑 (IT Equipment)', '办公家具与装潢 (Furniture & Renovation)', '专用工具与仪器 (Tools & Machinery)'],
+        OWNER_CAPITAL: ['实收资本 (Owner Capital)', '业主暂借款 (Director Advance)'],
+        OWNER_DRAWING: ['业主提款 (Owner Drawing)', '年终分红 (Dividends)']
+      };
+
+      (categories[type] || []).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.innerText = c;
+        catSelect.appendChild(opt);
+      });
+    }
+
+    function handleSaveEntry(e) {
+      e.preventDefault();
+      const date = document.getElementById('entryDate').value;
+      const type = document.getElementById('entryType').value;
+      const category = document.getElementById('entryCategory').value;
+      const amount = parseFloat(document.getElementById('entryAmount').value) || 0;
+      const channel = document.getElementById('entryChannel').value;
+      const ref = document.getElementById('entryRef').value.trim() || '-';
+      const desc = document.getElementById('entryDesc').value.trim();
+
+      const newTx = {
+        id: Date.now(),
+        date,
+        type,
+        category,
+        amount,
+        channel,
+        ref,
+        desc
+      };
+
+      appData.transactions.push(newTx);
+      appData.transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+      saveData();
+
+      alert('✅ 记账成功！已同步更新银行流水、日记账与财务报表。');
+      document.getElementById('entryForm').reset();
+      switchView('dashboardView', document.querySelectorAll('.tab')[0]);
+    }
+
+    function deleteTx(id) {
+      if (confirm('确定要删除这笔记录吗？')) {
+        appData.transactions = appData.transactions.filter(t => t.id !== id);
+        saveData();
+      }
+    }
+
+    // --- RENDER FUNCTIONS ---
+    function renderApp() {
+      // 1. Company Name Sync
+      const name = appData.companyName || 'MY ENTERPRISE';
+      document.getElementById('displayCompanyName').innerText = name;
+      document.getElementById('plCompanyName').innerText = name;
+      document.getElementById('bsCompanyName').innerText = name;
+      document.getElementById('settingCompanyName').value = name;
+
+      // 2. Calculations
+      let bankBalance = 0;
+      let annualRevenue = 0;
+      let annualCOGS = 0;
+      let annualExpenses = 0;
+      let pendingCount = 0;
+
+      const monthlyBuckets = {};
+      const expenseByCategory = {};
+      const revenueByCategory = {};
+
+      appData.transactions.forEach(t => {
+        const m = t.date.substring(0, 7);
+        if (!monthlyBuckets[m]) {
+          monthlyBuckets[m] = { cashIn: 0, cashOut: 0, revenue: 0, expense: 0 };
+        }
+
+        // Bank balance impact
+        if (t.channel === 'BANK') {
+          if (t.type === 'INCOME' || t.type === 'OWNER_CAPITAL') {
+            bankBalance += t.amount;
+            monthlyBuckets[m].cashIn += t.amount;
+          } else if (t.type === 'EXPENSE' || t.type === 'ASSET' || t.type === 'OWNER_DRAWING') {
+            bankBalance -= t.amount;
+            monthlyBuckets[m].cashOut += t.amount;
+          }
+        }
+
+        // P&L impact
+        if (t.type === 'INCOME') {
+          annualRevenue += t.amount;
+          monthlyBuckets[m].revenue += t.amount;
+          revenueByCategory[t.category] = (revenueByCategory[t.category] || 0) + t.amount;
+        } else if (t.type === 'EXPENSE') {
+          annualExpenses += t.amount;
+          monthlyBuckets[m].expense += t.amount;
+          expenseByCategory[t.category] = (expenseByCategory[t.category] || 0) + t.amount;
+        }
+      });
+
+      const netProfit = annualRevenue - annualCOGS - annualExpenses;
+
+      // Update Dashboard Cards
+      document.getElementById('cardBankBalance').innerText = fmt(bankBalance);
+      document.getElementById('cardAnnualRevenue').innerText = fmt(annualRevenue);
+      document.getElementById('cardAnnualProfit').innerText = fmt(netProfit);
+      document.getElementById('cardPendingCount').innerText = pendingCount + ' 笔';
+
+      // Render Monthly Table
+      const summaryTbody = document.getElementById('monthlySummaryTbody');
+      summaryTbody.innerHTML = '';
+      Object.keys(monthlyBuckets).sort().forEach(m => {
+        const b = monthlyBuckets[m];
+        const netCash = b.cashIn - b.cashOut;
+        const pL = b.revenue - b.expense;
+        summaryTbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-semibold">${m}</td>
+            <td class="p-3 money text-emerald-600">${fmt(b.cashIn)}</td>
+            <td class="p-3 money text-rose-600">${fmt(b.cashOut)}</td>
+            <td class="p-3 money font-bold ${netCash >= 0 ? 'text-slate-900' : 'text-rose-600'}">${fmt(netCash)}</td>
+            <td class="p-3 money font-bold ${pL >= 0 ? 'text-blue-600' : 'text-rose-600'}">${fmt(pL)}</td>
+          </tr>
+        `;
+      });
+
+      // Render Bank Table
+      const bankTbody = document.getElementById('bankTbody');
+      bankTbody.innerHTML = '';
+      let runningBank = 0;
+      appData.transactions.filter(t => t.channel === 'BANK').forEach(t => {
+        const isIn = (t.type === 'INCOME' || t.type === 'OWNER_CAPITAL');
+        const inAmt = isIn ? t.amount : 0;
+        const outAmt = !isIn ? t.amount : 0;
+        runningBank += (inAmt - outAmt);
+
+        bankTbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2.5">${t.date}</td>
+            <td class="p-2.5 font-mono text-xs">${t.ref}</td>
+            <td class="p-2.5">${t.category}</td>
+            <td class="p-2.5">${t.desc}</td>
+            <td class="p-2.5 money text-emerald-600">${inAmt ? fmt(inAmt) : '-'}</td>
+            <td class="p-2.5 money text-rose-600">${outAmt ? fmt(outAmt) : '-'}</td>
+            <td class="p-2.5 money font-semibold">${fmt(runningBank)}</td>
+            <td class="p-2.5 text-center no-print">
+              <button onclick="deleteTx(${t.id})" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">删除</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      // Render Journal Table
+      const journalTbody = document.getElementById('journalTbody');
+      journalTbody.innerHTML = '';
+      appData.transactions.forEach(t => {
+        let dr = '', cr = '';
+        if (t.type === 'INCOME') { dr = '银行存款 (Bank)'; cr = t.category; }
+        else if (t.type === 'EXPENSE') { dr = t.category; cr = t.channel === 'BANK' ? '银行存款 (Bank)' : '其他应付款/代垫 (Claims)'; }
+        else if (t.type === 'OWNER_CAPITAL') { dr = '银行存款 (Bank)'; cr = '实收资本 (Owner Capital)'; }
+        else if (t.type === 'OWNER_DRAWING') { dr = '业主提款 (Owner Drawing)'; cr = '银行存款 (Bank)'; }
+        else if (t.type === 'ASSET') { dr = t.category; cr = '银行存款 (Bank)'; }
+
+        journalTbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2.5">${t.date}</td>
+            <td class="p-2.5 font-mono text-xs">${t.ref}</td>
+            <td class="p-2.5 font-medium text-slate-800">${dr}</td>
+            <td class="p-2.5 font-medium text-slate-600 pl-4">→ ${cr}</td>
+            <td class="p-2.5 text-slate-500">${t.desc}</td>
+            <td class="p-2.5 money font-bold">${fmt(t.amount)}</td>
+          </tr>
+        `;
+      });
+
+      // Render P&L Statement
+      document.getElementById('plTotalRevenue').innerText = fmt(annualRevenue);
+      document.getElementById('plTotalCOGS').innerText = '- ' + fmt(annualCOGS);
+      document.getElementById('plGrossProfit').innerText = fmt(annualRevenue - annualCOGS);
+      document.getElementById('plTotalExpenses').innerText = '- ' + fmt(annualExpenses);
+      document.getElementById('plNetProfit').innerText = fmt(netProfit);
+
+      const plRevEl = document.getElementById('plRevenueDetails');
+      plRevEl.innerHTML = '';
+      Object.keys(revenueByCategory).forEach(c => {
+        plRevEl.innerHTML += `<div class="flex justify-between"><span>${c}</span><span class="money">${fmt(revenueByCategory[c])}</span></div>`;
+      });
+
+      const plExpEl = document.getElementById('plExpensesDetails');
+      plExpEl.innerHTML = '';
+      Object.keys(expenseByCategory).forEach(c => {
+        plExpEl.innerHTML += `<div class="flex justify-between"><span>${c}</span><span class="money">${fmt(expenseByCategory[c])}</span></div>`;
+      });
+
+      // Render Balance Sheet
+      let capital = 0;
+      let drawings = 0;
+      let claims = 0;
+      appData.transactions.forEach(t => {
+        if (t.type === 'OWNER_CAPITAL') capital += t.amount;
+        if (t.type === 'OWNER_DRAWING') drawings += t.amount;
+        if (t.channel === 'OWNER_CLAIM') claims += t.amount;
+      });
+
+      const totalAssets = bankBalance;
+      const totalEquity = capital - drawings + netProfit;
+      const totalLiab = claims;
+
+      document.getElementById('bsCurrentAssets').innerHTML = `<div class="flex justify-between"><span>银行存款 (Bank Cash Balance)</span><span class="money">${fmt(bankBalance)}</span></div>`;
+      document.getElementById('bsNonCurrentAssets').innerHTML = `<div class="flex justify-between text-slate-400"><span>固定资产净值 (Fixed Assets)</span><span class="money">RM 0.00</span></div>`;
+      document.getElementById('bsTotalAssets').innerText = fmt(totalAssets);
+
+      document.getElementById('bsLiabilities').innerHTML = `<div class="flex justify-between"><span>应付业主/员工垫付款 (Pending Claims)</span><span class="money">${fmt(claims)}</span></div>`;
+      document.getElementById('bsEquity').innerHTML = `
+        <div class="flex justify-between"><span>业主初始投资资本 (Owner Capital)</span><span class="money">${fmt(capital)}</span></div>
+        <div class="flex justify-between"><span>本期未分配净利润 (Current Year Profit)</span><span class="money">${fmt(netProfit)}</span></div>
+        <div class="flex justify-between text-rose-600"><span>减：业主提款/分红 (Drawings)</span><span class="money">- ${fmt(drawings)}</span></div>
+      `;
+      document.getElementById('bsTotalLiabilitiesEquity').innerText = fmt(totalLiab + totalEquity);
+
+      const isBalanced = Math.abs(totalAssets - (totalLiab + totalEquity)) < 0.01;
+      const checkEl = document.getElementById('bsBalanceCheck');
+      if (isBalanced) {
+        checkEl.className = 'text-center py-2 text-xs font-bold rounded bg-emerald-100 text-emerald-800';
+        checkEl.innerText = '✅ 资产负债表借贷勾稽平衡 (Balanced: Assets = Liabilities + Equity)';
+      } else {
+        checkEl.className = 'text-center py-2 text-xs font-bold rounded bg-rose-100 text-rose-800';
+        checkEl.innerText = '⚠️ 借贷勾稽差异 (Unbalanced Difference: ' + fmt(totalAssets - (totalLiab + totalEquity)) + ')';
+      }
+
+      // Render Reimbursements
+      const reimbTbody = document.getElementById('reimburseTbody');
+      reimbTbody.innerHTML = '';
+      appData.transactions.filter(t => t.channel === 'OWNER_CLAIM').forEach(t => {
+        reimbTbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2.5">${t.date}</td>
+            <td class="p-2.5 font-medium">业主 / 员工</td>
+            <td class="p-2.5">${t.category}</td>
+            <td class="p-2.5">${t.desc}</td>
+            <td class="p-2.5 money font-bold text-rose-600">${fmt(t.amount)}</td>
+            <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-800 font-semibold">待报销还款</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    // --- SETTINGS & BACKUP ---
+    function saveSettings() {
+      appData.companyName = document.getElementById('settingCompanyName').value.trim() || 'MY ENTERPRISE';
+      saveData();
+    }
+
+    function exportBackupJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `EasyBooks_Backup_${appData.companyName}_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.transactions) {
+            appData = imported;
+            saveData();
+            alert('🎉 账套数据恢复成功！');
+          } else {
+            alert('❌ 无效的备份文件格式！');
+          }
+        } catch (err) {
+          alert('❌ 备份文件解析失败：' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetToSampleData() {
+      if (confirm('确定要重置为默认演示账套吗？当前修改将被覆盖。')) {
+        appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        saveData();
+      }
+    }
+
+    function clearAllData() {
+      if (confirm('⚠️ 警告：确定要清空所有交易记录建立空白账套吗？此操作不可逆！')) {
+        appData.transactions = [];
+        saveData();
+      }
+    }
+
+    function exportCSV(type) {
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      if (type === 'bank') {
+        csvContent += "日期,凭证号,分类,描述,金额,渠道\n";
+        appData.transactions.filter(t => t.channel === 'BANK').forEach(t => {
+          csvContent += `"${t.date}","${t.ref}","${t.category}","${t.desc}","${t.amount}","${t.channel}"\n`;
+        });
+      } else {
+        csvContent += "日期,凭证号,分类,描述,金额\n";
+        appData.transactions.forEach(t => {
+          csvContent += `"${t.date}","${t.ref}","${t.category}","${t.desc}","${t.amount}"\n`;
+        });
+      }
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `${appData.companyName}_${type}_export.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    // Initialize
+    updateAccountOptions();
+    document.getElementById('entryDate').valueAsDate = new Date();
+    renderApp();
+  </script>
+</body>
+</html>
