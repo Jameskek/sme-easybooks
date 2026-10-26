@@ -198,54 +198,136 @@
         <p class="text-muted">{{ pdfType === 'invoice' ? 'Formatting professional invoice' : 'Formatting A5 Landscape' }}</p>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="elegant-title">{{ settings.clinicName || 'Clinic Premium' }}</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2 class="elegant-title mb-0">🏥 {{ settings.clinicName || 'Clinic Premium' }} · 自动开收据 & 病假单系统</h2>
+        <div class="d-flex gap-2 flex-wrap">
+            <button v-if="invoices.length > 0" class="apple-btn" style="background:#0f766e;" @click="generatePDF('invoice', invoices[0])">📄 一键下载【{{ settings.clinicName }}】收据样板 PDF</button>
+            <button v-if="mcs.length > 0" class="apple-btn" style="background:#1d4ed8;" @click="generatePDF('mc', mcs[0])">📄 一键下载【{{ settings.clinicName }}】病假单(MC)样板 PDF</button>
+        </div>
+    </div>
+
+    <!-- ================= 0. 手机/电脑一秒直看：成品收据 & 病假单样板直接展示 ================= -->
+    <div class="apple-card mb-4" style="border: 2px solid #0d9488; background: #f0fdfa; padding: 18px;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <span style="background:#0f766e; color:#fff; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700;">👀 一秒看懂这是什么</span>
+                <strong style="font-size:16px; color:#0f172a; margin-left:6px;">平时病人看完诊要【拿收据 Claim 保险】或【拿病假单 MC】，您点一下就会自动生成下面这两张单：</strong>
+            </div>
+        </div>
+        <div class="row g-3">
+            <!-- 成品样板 1：正式收据 -->
+            <div class="col-md-6">
+                <div style="background:#fff; border:1px solid #cbd5e1; border-radius:10px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                    <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
+                        <div>
+                            <div style="font-size:17px; font-weight:800; color:#0f172a;">{{ settings.clinicName || '心医馆' }}</div>
+                            <div style="font-size:11px; color:#64748b;">{{ settings.address }} | Tel: {{ settings.phone }}</div>
+                        </div>
+                        <div class="text-end">
+                            <span style="background:#dcfce7; color:#166534; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">正式收据 OFFICIAL RECEIPT</span>
+                            <div style="font-size:11px; color:#475569; margin-top:2px;">单号: #REC-100001</div>
+                        </div>
+                    </div>
+                    <div style="font-size:12px; color:#334155; margin-bottom:8px;">
+                        <strong>患者姓名 Patient:</strong> 陈慧仪 Tan Hui Yi &nbsp;|&nbsp; <strong>主治医师:</strong> {{ settings.doctorName }}
+                    </div>
+                    <table style="width:100%; font-size:12px; border-collapse:collapse; margin-bottom:10px;">
+                        <thead>
+                            <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
+                                <th style="padding:5px;">诊疗项目 Item</th>
+                                <th style="padding:5px; text-align:right;">金额 Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:5px;">针灸治疗 Acupuncture</td>
+                                <td style="padding:5px; text-align:right;">RM 80.00</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:5px;">内科中药调理 Herbal Granules (5天)</td>
+                                <td style="padding:5px; text-align:right;">RM 100.00</td>
+                            </tr>
+                            <tr style="font-weight:800; color:#0f766e; background:#f8fafc;">
+                                <td style="padding:6px 5px;">实收总计 Total Paid (已付款 PAID)</td>
+                                <td style="padding:6px 5px; text-align:right;">RM 180.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button v-if="invoices.length > 0" class="apple-btn w-100" style="background:#0f766e; padding:8px; font-size:13px;" @click="generatePDF('invoice', invoices[0])">📄 点击导出这张【正式收据】PDF 打印/发给病人</button>
+                </div>
+            </div>
+            <!-- 成品样板 2：中医病假单 MC -->
+            <div class="col-md-6">
+                <div style="background:#fff; border:1px solid #cbd5e1; border-radius:10px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                    <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
+                        <div>
+                            <div style="font-size:17px; font-weight:800; color:#1d4ed8;">{{ settings.clinicName || '心医馆' }}</div>
+                            <div style="font-size:11px; color:#64748b;">中医诊疗与休息建议书 (TCM Medical Certificate)</div>
+                        </div>
+                        <div class="text-end">
+                            <span style="background:#dbeafe; color:#1e40af; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">病假单 MEDICAL CERTIFICATE</span>
+                            <div style="font-size:11px; color:#475569; margin-top:2px;">编号: #MC-100001</div>
+                        </div>
+                    </div>
+                    <div style="font-size:12px; color:#334155; margin-bottom:6px;">
+                        <strong>患者姓名 Name:</strong> 陈慧仪 Tan Hui Yi &nbsp;|&nbsp; <strong>IC:</strong> 880512-14-5234
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px; font-size:12px; margin-bottom:10px;">
+                        <div><strong>中医诊断 Assessment:</strong> 急性腰扭伤（气滞血瘀），腰部剧痛活动受限</div>
+                        <div style="color:#b91c1c; font-weight:700; margin-top:4px;">🛌 建议休息 Rest Advice: 建议休假 2 天 (Unfit for duty for 2 days)</div>
+                        <div style="font-size:11px; color:#64748b; margin-top:3px;">✍️ 电子签章: {{ settings.doctorName }} ({{ settings.practitionerNo }})</div>
+                    </div>
+                    <button v-if="mcs.length > 0" class="apple-btn w-100" style="background:#1d4ed8; padding:8px; font-size:13px;" @click="generatePDF('mc', mcs[0])">📄 点击导出这张【中医病假单 MC】PDF 打印/发给病人</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="text-center">
         <div class="segmented-control">
-            <button :class="{ active: currentTab === 'patients' }" @click="currentTab = 'patients'">👥 患者档案 Patients</button>
-            <button :class="{ active: currentTab === 'invoices' }" @click="currentTab = 'invoices'">🧾 开单收据 Receipts</button>
-            <button :class="{ active: currentTab === 'mcs' }" @click="currentTab = 'mcs'">📝 病假单 TCM MCs</button>
-            <button :class="{ active: currentTab === 'finances' }" @click="currentTab = 'finances'">📊 营收报表 Reports</button>
-            <button :class="{ active: currentTab === 'settings' }" @click="currentTab = 'settings'">⚙️ 诊所设置 Settings</button>
+            <button :class="{ active: currentTab === 'patients' }" @click="currentTab = 'patients'">① 患者名单 Patients</button>
+            <button :class="{ active: currentTab === 'invoices' }" @click="currentTab = 'invoices'">② 开单收据 Receipts</button>
+            <button :class="{ active: currentTab === 'mcs' }" @click="currentTab = 'mcs'">③ 开病假单 TCM MCs</button>
+            <button :class="{ active: currentTab === 'finances' }" @click="currentTab = 'finances'">④ 诊所记账报表 Reports</button>
+            <button :class="{ active: currentTab === 'settings' }" @click="currentTab = 'settings'">⑤ 修改诊所名字 Settings</button>
         </div>
     </div>
 
     <!-- ================= 1. PATIENTS MODULE ================= -->
     <div v-if="currentTab === 'patients'">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <div class="d-flex gap-2 align-items-center">
-                <div style="width: 300px;"><input v-model="searchQuery" type="text" class="apple-input" placeholder="🔍 Search name, phone, ID..."></div>
-                <button v-if="selectedPatients.length > 0" class="apple-btn apple-btn-danger" @click="deleteSelectedPatients">Delete Selected ({{ selectedPatients.length }})</button>
+                <div style="width: 280px;"><input v-model="searchQuery" type="text" class="apple-input" placeholder="🔍 搜索患者姓名 / 电话 / IC..."></div>
+                <button v-if="selectedPatients.length > 0" class="apple-btn apple-btn-danger" @click="deleteSelectedPatients">删除选中 ({{ selectedPatients.length }})</button>
             </div>
-            <button class="apple-btn" @click="showPatientForm = !showPatientForm">{{ showPatientForm ? '取消 Cancel' : '+ 新增患者 New Patient' }}</button>
+            <button class="apple-btn" @click="showPatientForm = !showPatientForm">{{ showPatientForm ? '取消 Cancel' : '+ 新增患者登记 New Patient' }}</button>
         </div>
 
         <div v-if="showPatientForm" class="apple-card" style="background: #f8fafc; border: 1px solid #e2e8f0;">
-            <h5 class="mb-4">New Patient Profile</h5>
+            <h5 class="mb-4">新增患者资料 New Patient Profile</h5>
             <div class="row g-3">
-                <div class="col-md-3"><input v-model="newPatient.name" type="text" class="apple-input" placeholder="Full Name *"></div>
-                <div class="col-md-2"><select v-model="newPatient.gender" class="apple-select"><option value="">Gender</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
-                <div class="col-md-2"><input v-model="newPatient.age" type="number" class="apple-input" placeholder="Age"></div>
-                <div class="col-md-5"><input v-model="newPatient.phone" type="text" class="apple-input" placeholder="Phone Number *"></div>
-                <div class="col-md-4"><input v-model="newPatient.idCard" type="text" class="apple-input" placeholder="ID / Passport No."></div>
-                <div class="col-md-8"><input v-model="newPatient.address" type="text" class="apple-input" placeholder="Home Address"></div>
-                <div class="col-md-10"><input v-model="newPatient.notes" type="text" class="apple-input" placeholder="Allergies & Medical Notes"></div>
-                <div class="col-md-2"><button class="apple-btn w-100 h-100" @click="addPatient">Save Profile</button></div>
+                <div class="col-md-3"><input v-model="newPatient.name" type="text" class="apple-input" placeholder="患者姓名 Full Name *"></div>
+                <div class="col-md-2"><select v-model="newPatient.gender" class="apple-select"><option value="">性别 Gender</option><option value="Male">男 Male</option><option value="Female">女 Female</option></select></div>
+                <div class="col-md-2"><input v-model="newPatient.age" type="number" class="apple-input" placeholder="年龄 Age"></div>
+                <div class="col-md-5"><input v-model="newPatient.phone" type="text" class="apple-input" placeholder="电话号码 Phone Number *"></div>
+                <div class="col-md-4"><input v-model="newPatient.idCard" type="text" class="apple-input" placeholder="身份证 IC / Passport No."></div>
+                <div class="col-md-8"><input v-model="newPatient.address" type="text" class="apple-input" placeholder="地址 Home Address"></div>
+                <div class="col-md-10"><input v-model="newPatient.notes" type="text" class="apple-input" placeholder="病史与过敏备注 Allergies & Medical Notes"></div>
+                <div class="col-md-2"><button class="apple-btn w-100 h-100" @click="addPatient">保存患者 Save</button></div>
             </div>
         </div>
 
         <div class="apple-card">
+            <div class="mb-2 text-muted" style="font-size:13px;">💡 <strong>操作方法：</strong>直接在任意病人右边点击 <strong>【🧾 开收据】</strong> 或 <strong>【📝 开病假单】</strong> 即可！</div>
             <table class="apple-table">
                 <thead>
                     <tr>
                         <th style="width: 40px;"><input type="checkbox" class="form-check-input" v-model="selectAllPatients"></th>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>Total Spent (LTV)</th>
-                        <th>Notes</th>
-                        <th class="text-end">Action</th>
+                        <th>患者姓名 Name</th>
+                        <th>电话 Phone</th>
+                        <th>累计看诊消费 Total</th>
+                        <th>病历备注 Notes</th>
+                        <th class="text-end">快捷开单 Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -256,11 +338,11 @@
                         <td><strong style="color: var(--accent-blue);">{{ settings.currencySymbol }} {{ getPatientTotalSpent(p.id).toFixed(2) }}</strong></td>
                         <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted);">{{ p.notes || '-' }}</td>
                         <td class="text-end">
-                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 14px; font-size: 12px;" @click="goToCreateMC(p.id)">Write MC</button>
-                            <button class="apple-btn apple-btn-secondary" style="padding: 6px 14px; font-size: 12px;" @click="goToCreateInvoice(p.id)">Bill</button>
+                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 14px; font-size: 12px;" @click="goToCreateMC(p.id)">📝 开病假单 MC</button>
+                            <button class="apple-btn" style="padding: 6px 14px; font-size: 12px;" @click="goToCreateInvoice(p.id)">🧾 开收据 Bill</button>
                         </td>
                     </tr>
-                    <tr v-if="filteredPatients.length === 0"><td colspan="6" class="text-center text-muted py-4">No patients found.</td></tr>
+                    <tr v-if="filteredPatients.length === 0"><td colspan="6" class="text-center text-muted py-4">暂无患者记录</td></tr>
                 </tbody>
             </table>
         </div>
@@ -269,19 +351,19 @@
     <!-- ================= 2. INVOICES & RECEIPTS MODULE ================= -->
     <div v-if="currentTab === 'invoices'">
         <div v-if="isCreatingInvoice" class="apple-card">
-            <h4 class="mb-4">Create New Invoice</h4>
+            <h4 class="mb-4">🧾 开具新收据 Create New Receipt / Invoice</h4>
             <div class="mb-4">
-                <label class="form-label text-muted small text-uppercase">Select Patient</label>
+                <label class="form-label text-muted small text-uppercase">选择患者 Select Patient</label>
                 <select v-model="newInvoice.patientId" class="apple-select">
-                    <option value="" disabled>Please select...</option>
+                    <option value="" disabled>请选择患者...</option>
                     <option v-for="p in patients" :key="p.id" :value="p.id">{{ p.name }} ({{ p.phone }})</option>
                 </select>
             </div>
             <table class="apple-table mb-3">
-                <thead><tr><th>Description / Treatment</th><th>Price ({{ settings.currencySymbol }})</th><th>Qty</th><th>Amount</th><th></th></tr></thead>
+                <thead><tr><th>收费项目 Treatment / Item</th><th>单价 Price ({{ settings.currencySymbol }})</th><th>数量 Qty</th><th>小计 Amount</th><th></th></tr></thead>
                 <tbody>
                     <tr v-for="(item, index) in newInvoice.items" :key="index">
-                        <td><input list="billing-items-list" v-model="item.desc" @change="autoFillPrice(item)" class="apple-input" placeholder="Select or type item..."></td>
+                        <td><input list="billing-items-list" v-model="item.desc" @change="autoFillPrice(item)" class="apple-input" placeholder="点击选择诊金/针灸/拔罐/中药..."></td>
                         <td><input v-model.number="item.price" type="number" min="0" class="apple-input"></td>
                         <td><input v-model.number="item.qty" type="number" min="1" class="apple-input"></td>
                         <td style="vertical-align: middle;"><strong>{{ settings.currencySymbol }} {{ (item.price * item.qty).toFixed(2) }}</strong></td>
@@ -290,23 +372,23 @@
                 </tbody>
             </table>
             <datalist id="billing-items-list"><option v-for="bItem in settings.billingItems" :key="bItem.name" :value="bItem.name"></option></datalist>
-            <button class="apple-btn apple-btn-secondary mb-4" @click="newInvoice.items.push({desc:'', price:0, qty:1})">+ Add Item</button>
+            <button class="apple-btn apple-btn-secondary mb-4" @click="newInvoice.items.push({desc:'', price:0, qty:1})">+ 添加收费项目 Add Item</button>
             <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-2">
-                <h3 class="mb-0 elegant-title">Total: <span style="color: var(--accent-blue);">{{ settings.currencySymbol }} {{ calculateNewInvoiceTotal().toFixed(2) }}</span></h3>
+                <h3 class="mb-0 elegant-title">总计 Total: <span style="color: var(--accent-blue);">{{ settings.currencySymbol }} {{ calculateNewInvoiceTotal().toFixed(2) }}</span></h3>
                 <div>
-                    <button class="apple-btn apple-btn-secondary me-2" @click="isCreatingInvoice = false">Cancel</button>
-                    <button class="apple-btn" @click="saveInvoice">Save Invoice</button>
+                    <button class="apple-btn apple-btn-secondary me-2" @click="isCreatingInvoice = false">取消 Cancel</button>
+                    <button class="apple-btn" @click="saveInvoice">✅ 保存并生成单据 Save</button>
                 </div>
             </div>
         </div>
 
         <div v-else class="apple-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="mb-0">Billing History</h5>
-                <button class="apple-btn" @click="isCreatingInvoice = true">+ New Invoice</button>
+                <h5 class="mb-0">🧾 历史收据记录 Billing & Receipt History</h5>
+                <button class="apple-btn" @click="isCreatingInvoice = true">+ 开新收据 New Receipt</button>
             </div>
             <table class="apple-table">
-                <thead><tr><th>Inv / Rec No.</th><th>Patient</th><th>Date</th><th>Total</th><th>Paid</th><th>Status</th><th class="text-end">Action</th></tr></thead>
+                <thead><tr><th>单号 Inv / Rec No.</th><th>患者姓名 Patient</th><th>日期 Date</th><th>总金额 Total</th><th>已收款 Paid</th><th>状态 Status</th><th class="text-end">操作 Action</th></tr></thead>
                 <tbody>
                     <tr v-for="inv in invoices" :key="inv.id">
                         <td class="text-muted" style="font-size: 13px;">
@@ -319,12 +401,12 @@
                         <td>{{ settings.currencySymbol }}{{ getPaidAmount(inv).toFixed(2) }}</td>
                         <td><span class="apple-badge" :class="getInvoiceStatusClass(inv)">{{ getInvoiceStatus(inv) }}</span></td>
                         <td class="text-end">
-                            <button class="apple-btn apple-btn-success me-2" style="padding: 6px 10px; font-size: 12px;" @click="openPaymentModal(inv)">Pay</button>
-                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 10px; font-size: 12px;" @click="generatePDF('invoice', inv)">PDF</button>
-                            <button class="apple-btn apple-btn-danger" style="padding: 6px 10px; font-size: 12px;" @click="deleteInvoice(inv.id)">Del</button>
+                            <button class="apple-btn apple-btn-success me-2" style="padding: 6px 10px; font-size: 12px;" @click="openPaymentModal(inv)">💰 收款 Pay</button>
+                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 10px; font-size: 12px;" @click="generatePDF('invoice', inv)">📄 下载收据PDF</button>
+                            <button class="apple-btn apple-btn-danger" style="padding: 6px 10px; font-size: 12px;" @click="deleteInvoice(inv.id)">🗑️ 删除</button>
                         </td>
                     </tr>
-                    <tr v-if="invoices.length === 0"><td colspan="7" class="text-center text-muted py-4">No invoices found.</td></tr>
+                    <tr v-if="invoices.length === 0"><td colspan="7" class="text-center text-muted py-4">暂无收据记录</td></tr>
                 </tbody>
             </table>
         </div>
@@ -333,17 +415,17 @@
     <!-- ================= 3. TCM MC MODULE ================= -->
     <div v-if="currentTab === 'mcs'">
         <div v-if="isCreatingMC" class="apple-card">
-            <h4 class="mb-4 elegant-title">TCM Consultation Note & MC</h4>
+            <h4 class="mb-4 elegant-title">📝 开具中医病假单 TCM Medical Certificate (MC)</h4>
             <div class="row g-4 mb-4">
                 <div class="col-md-8">
-                    <label class="form-label text-muted small text-uppercase">Select Patient</label>
+                    <label class="form-label text-muted small text-uppercase">选择患者 Select Patient</label>
                     <select v-model="newMC.patientId" class="apple-select">
-                        <option value="" disabled>Please select...</option>
+                        <option value="" disabled>请选择患者...</option>
                         <option v-for="p in patients" :key="p.id" :value="p.id">{{ p.name }} ({{ p.phone }})</option>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label text-muted small text-uppercase">Mode of Consultation</label>
+                    <label class="form-label text-muted small text-uppercase">看诊方式 Mode of Consultation</label>
                     <select v-model="newMC.mode" class="apple-select">
                         <option value="In-person">In-person 线下看诊</option>
                         <option value="Online">Online Consultation 线上咨询</option>
@@ -351,32 +433,32 @@
                 </div>
                 
                 <div class="col-md-6">
-                    <label class="form-label text-muted small text-uppercase">Clinical Complaint / 主诉</label>
-                    <textarea v-model="newMC.complaint" class="apple-textarea" placeholder="Describe patient's symptoms..."></textarea>
+                    <label class="form-label text-muted small text-uppercase">临床主诉 Clinical Complaint</label>
+                    <textarea v-model="newMC.complaint" class="apple-textarea" placeholder="填写患者症状..."></textarea>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-muted small text-uppercase">TCM Assessment / 中医辨证判断</label>
-                    <textarea v-model="newMC.assessment" class="apple-textarea" placeholder="e.g., 气血两虚, 脾胃虚寒..."></textarea>
+                    <label class="form-label text-muted small text-uppercase">中医辨证诊断 TCM Assessment</label>
+                    <textarea v-model="newMC.assessment" class="apple-textarea" placeholder="例如：气血两虚、急性腰扭伤..."></textarea>
                 </div>
 
                 <div class="col-md-12 border-top pt-3 mt-2">
-                    <h6 class="mb-3">Rest Advice / 休息建议</h6>
+                    <h6 class="mb-3">休息天数建议 Rest Advice</h6>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label text-muted small text-uppercase">From / 开始日期</label>
+                    <label class="form-label text-muted small text-uppercase">开始日期 From</label>
                     <input v-model="newMC.startDate" type="date" class="apple-input" @change="calculateMCDays">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label text-muted small text-uppercase">To / 结束日期</label>
+                    <label class="form-label text-muted small text-uppercase">结束日期 To</label>
                     <input v-model="newMC.endDate" type="date" class="apple-input" @change="calculateMCDays">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label text-muted small text-uppercase">Total Days / 合计天数</label>
+                    <label class="form-label text-muted small text-uppercase">合计休息天数 Total Days</label>
                     <input v-model.number="newMC.days" type="number" class="apple-input" readonly style="background: #f8fafc; font-weight: 600; color: var(--accent-blue);">
                 </div>
 
                 <div class="col-md-12">
-                    <label class="form-label text-muted small text-uppercase">Reason / 原因</label>
+                    <label class="form-label text-muted small text-uppercase">病假原因分类 Reason</label>
                     <select v-model="newMC.reasonType" class="apple-select mb-2">
                         <option value="Fever / flu-like symptoms">Fever / flu-like symptoms 发热或感冒样症状</option>
                         <option value="Gastrointestinal discomfort">Gastrointestinal discomfort 胃肠不适</option>
@@ -384,36 +466,36 @@
                         <option value="Fatigue / dizziness">Fatigue / dizziness 乏力或头晕</option>
                         <option value="Others">Others 其他</option>
                     </select>
-                    <input v-if="newMC.reasonType === 'Others'" v-model="newMC.reasonOther" type="text" class="apple-input" placeholder="Please specify / 请注明">
+                    <input v-if="newMC.reasonType === 'Others'" v-model="newMC.reasonOther" type="text" class="apple-input" placeholder="请注明具体原因 Please specify">
                 </div>
             </div>
             <div class="text-end border-top pt-4 mt-2">
-                <button class="apple-btn apple-btn-secondary me-2" @click="isCreatingMC = false">Cancel</button>
-                <button class="apple-btn" @click="saveMC">Issue TCM MC</button>
+                <button class="apple-btn apple-btn-secondary me-2" @click="isCreatingMC = false">取消 Cancel</button>
+                <button class="apple-btn" @click="saveMC">✅ 保存并开具病假单 Issue MC</button>
             </div>
         </div>
 
         <div v-else class="apple-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="mb-0">TCM MC History</h5>
-                <button class="apple-btn" @click="isCreatingMC = true">+ Issue TCM MC</button>
+                <h5 class="mb-0">📝 历史病假单记录 TCM MC History</h5>
+                <button class="apple-btn" @click="isCreatingMC = true">+ 开新病假单 Issue MC</button>
             </div>
             <table class="apple-table">
-                <thead><tr><th>MC No.</th><th>Patient</th><th>Issue Date</th><th>Period</th><th>Days</th><th>Reason</th><th class="text-end">Action</th></tr></thead>
+                <thead><tr><th>MC 单号</th><th>患者姓名 Patient</th><th>开具日期</th><th>休假起止日期 Period</th><th>天数 Days</th><th>原因 Reason</th><th class="text-end">操作 Action</th></tr></thead>
                 <tbody>
                     <tr v-for="mc in mcs" :key="mc.id">
                         <td class="text-muted" style="font-size: 13px;">{{ mc.id }}</td>
                         <td><strong>{{ getPatientName(mc.patientId) }}</strong></td>
                         <td>{{ mc.issueDate }}</td>
-                        <td style="font-size: 13px;">{{ mc.startDate }} to {{ mc.endDate }}</td>
-                        <td><span class="apple-badge badge-warning">{{ mc.days }} Days</span></td>
+                        <td style="font-size: 13px;">{{ mc.startDate }} 至 {{ mc.endDate }}</td>
+                        <td><span class="apple-badge badge-warning">{{ mc.days }} 天</span></td>
                         <td style="color: var(--text-muted);">{{ mc.reasonType === 'Others' ? mc.reasonOther : mc.reasonType }}</td>
                         <td class="text-end">
-                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 10px; font-size: 12px;" @click="generatePDF('mc', mc)">PDF</button>
-                            <button class="apple-btn apple-btn-danger" style="padding: 6px 10px; font-size: 12px;" @click="deleteMC(mc.id)">Del</button>
+                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 10px; font-size: 12px;" @click="generatePDF('mc', mc)">📄 下载病假单PDF</button>
+                            <button class="apple-btn apple-btn-danger" style="padding: 6px 10px; font-size: 12px;" @click="deleteMC(mc.id)">🗑️ 删除</button>
                         </td>
                     </tr>
-                    <tr v-if="mcs.length === 0"><td colspan="7" class="text-center text-muted py-5">No MC records found.</td></tr>
+                    <tr v-if="mcs.length === 0"><td colspan="7" class="text-center text-muted py-5">暂无病假单记录</td></tr>
                 </tbody>
             </table>
         </div>
