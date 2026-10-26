@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-MY">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大马中医诊所 4合1 离线数字化系统 | 电子病历Pro + 保险理赔收据Receipt + 中英病假单MC</title>
+  <meta name="description" content="专为马来西亚中医诊所与独立执业中医师打造的纯单机、零月租、零泄密 4合1 门诊系统：电子病历Pro (v70.7) + 正式收据(Official Receipt) + 病假单(MC) + 每日财务报表。">
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --primary-light: #ccfbf1;
+      --indigo: #4338ca;
+      --accent: #d97706;
+      --dark: #0f172a;
+      --light: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --wa: #25d366;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", sans-serif;
+      background: var(--light);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .vip-banner {
+      background: linear-gradient(90deg, #1e1b4b, #312e81);
+      color: #ffffff;
+      text-align: center;
+      padding: 0.65rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .vip-banner strong {
+      color: #fbbf24;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.4rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+      font-size: 0.98rem;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.28);
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    .btn-indigo {
+      background: var(--indigo);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(67, 56, 202, 0.28);
+    }
+    .btn-indigo:hover {
+      background: #3730a3;
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: #ffffff;
+      color: var(--dark);
+      border: 2px solid #cbd5e1;
+    }
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-wa {
+      background: var(--wa);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+    }
+    .btn-wa:hover {
+      background: #20ba5a;
+      transform: translateY(-2px);
+    }
+    .hero {
+      padding: 3.2rem 1.25rem 2.5rem;
+      text-align: center;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .hero-tag {
+      display: inline-block;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-bottom: 0.85rem;
+      background: var(--primary-light);
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      border: 1px solid #99f6e4;
+    }
+    .hero h1 {
+      font-size: 2.15rem;
+      line-height: 1.3;
+      font-weight: 900;
+      margin-bottom: 1rem;
+      color: var(--dark);
+    }
+    .hero p {
+      font-size: 1.08rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+    }
+    .demo-box {
+      background: #ffffff;
+      border: 2px solid #0d9488;
+      border-radius: 18px;
+      padding: 1.5rem;
+      margin-bottom: 1.75rem;
+      box-shadow: 0 10px 25px rgba(13, 148, 136, 0.08);
+    }
+    .demo-box-title {
+      font-weight: 800;
+      color: #0f766e;
+      font-size: 1.05rem;
+      margin-bottom: 1rem;
+    }
+    .hero-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 0.85rem;
+    }
+    .trust-strip {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      text-align: center;
+    }
+    .trust-item h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .trust-item p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .section {
+      padding: 3.5rem 1.25rem;
+      max-width: 1020px;
+      margin: 0 auto;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .section-title h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+    }
+    .feature-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+    }
+    .feature-icon {
+      font-size: 1.85rem;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+    }
+    .feature-card h3 {
+      font-size: 1.12rem;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+    }
+    .feature-card p {
+      font-size: 0.94rem;
+      color: var(--text-muted);
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      max-width: 900px;
+      margin: 0 auto 2.5rem;
+    }
+    .pricing-card {
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: var(--radius);
+      padding: 2.2rem 1.75rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .pricing-card.featured {
+      background: linear-gradient(135deg, #0f172a, #1e1b4b);
+      color: #ffffff;
+      border-color: #fbbf24;
+      box-shadow: 0 12px 30px rgba(30, 27, 75, 0.25);
+      position: relative;
+    }
+    .price {
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: var(--primary);
+      margin: 0.75rem 0;
+    }
+    .pricing-card.featured .price {
+      color: #fbbf24;
+    }
+    .price del {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      font-weight: 400;
+      margin-right: 0.4rem;
+    }
+    .faq-box {
+      max-width: 850px;
+      margin: 0 auto;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+    .floating-wa {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      background: #25d366;
+      color: #ffffff;
+      padding: 0.85rem 1.4rem;
+      border-radius: 9999px;
+      font-weight: 800;
+      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.65rem; }
+      .hero-buttons { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="vip-banner" id="vip-banner">
+    🎁 同行零风险承诺：<strong>免费为您预填贵院抬头与 SSM 注册号</strong> · 手机/电脑直接点下方按钮免登录试玩！
+  </div>
+
+  <header>
+    <div class="logo">
+      <span>🌿 风铃中医诊所数字化系统</span>
+      <span class="badge" id="header-badge">v70.7 大马诊所 4合1 买断版</span>
+    </div>
+    <a id="header-wa-btn" href="https://wa.me/601155513221?text=Hi%20郭医师%2C%20我想了解并定制本诊所的4合1离线病历与收据MC系统" class="btn btn-wa" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+      💬 WhatsApp 郭医师 (011-5551 3221)
+    </a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <span class="hero-tag" id="hero-tag">专为马来西亚中医诊所与独立医师量身打造 · 纯单机免安装</span>
+      <h1 id="hero-title">一套彻底解决【看诊写病历 + 保险理赔收据 + 中英病假单 MC + 每日算账】的纯单机系统</h1>
+      <p>不用每月交几百块云端月费，不用担心断网或病患隐私外泄。双击浏览器即可运行，病患拿收据与 MC 去 Claim 保险（AIA / Prudential / Great Eastern / 公司报销）100% 规范通过！</p>
+
+      <div class="demo-box">
+        <div class="demo-box-title" id="demo-box-title">👇 点击下方按钮，免安装直接试玩真实系统（已预装 3 位示例患者）：</div>
+        <div class="hero-buttons">
+          <a id="btn-demo-mc" href="clinic-billing-mc.html" target="_blank" class="btn btn-primary">
+            🧾 立即试用 1：开单 / 保险收据(Receipt) / 病假单(MC) / 营收报表
+          </a>
+          <a id="btn-demo-emr" href="tcm-emr-pro.html" target="_blank" class="btn btn-indigo">
+            ⚡ 立即试用 2：门诊电子病历系统 Pro (v70.7 复诊时间线+自动算克数)
+          </a>
+          <a id="btn-demo-herb" href="tcm-assistant-demo.html" target="_blank" class="btn btn-outline">
+            🌿 立即试用 3：伤寒金匮经方速查与 A4 处方笺打印
+          </a>
+        </div>
+        <p style="font-size:0.82rem; color:#64748b; margin-top:0.85rem;">💡 提示：手机可直接点开预览；在诊所电脑（Windows / Mac / iPad）上打开体验更佳，支持一键导出高清 PDF！</p>
+      </div>
+    </section>
+
+    <div class="trust-strip">
+      <div class="trust-item">
+        <h3>100% 保险合规</h3>
+        <p>正式 Official Receipt & 双语 MC</p>
+      </div>
+      <div class="trust-item">
+        <h3>0 安装 · 1分钟上手</h3>
+        <p>前台小妹与老医师一看即会</p>
+      </div>
+      <div class="trust-item">
+        <h3>100% 离线安全</h3>
+        <p>断网可用 · 病历绝不上云端</p>
+      </div>
+      <div class="trust-item">
+        <h3>0 月租 · 一次买断</h3>
+        <p>RM 99 起永久属于您的诊所</p>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>为什么大马同行纷纷换用这套 4合1 离线系统？</h2>
+        <p>由同在马来西亚执业的广州中医药大学科班中医师（郭铭证医师）结合临床痛点研发</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">🧾</span>
+          <h3>痛点 1：病患要求开保险理赔收据 & MC</h3>
+          <p>手写单据常被保险公司拒赔？系统内置马来西亚标准中英双语 Official Receipt 与 TCM Medical Certificate (MC)，自动印上贵院抬头、SSM 号、医师注册号（T&CM No.）与电子签名，一键导出 PDF 打印或发 WhatsApp。</p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">⚡</span>
+          <h3>痛点 2：手写病历慢、老病患复诊难翻找</h3>
+          <p>电子病历 Pro (v70.7) 支持输入患者姓名/手机号 1 秒调出历史就诊时间轴，自动对比上次与本次症状变化；输入“桂枝汤”秒级联想原方剂量并自动汇总总克数。</p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">📊</span>
+          <h3>痛点 3：每天关门算账对账繁琐</h3>
+          <p>前台开完收据（Cash / TNG eWallet / Bank Transfer / Card），系统自动记入每日/每周/每月营收报表与开销账本，月底报税与对账一目了然。</p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">🛡️</span>
+          <h3>痛点 4：商业软件年费上千、怕绑架数据</h3>
+          <p>市面上 SaaS 软件每年收费 RM 1,500+，一旦停费连旧病历都打不开。本系统一次买断终身 0 月费，数据 100% 存在您自己电脑里，支持 1 秒导出备份到 USB/Google Drive。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 0;">
+      <div class="section-title">
+        <h2>同行专属买断方案（免费包改诊所抬头 + 1对1包教会）</h2>
+        <p>今天下单，郭医师亲自为您把【贵院中英文名称、地址、电话、SSM号、医师T&CM号】预填打包好发给您！</p>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div>
+            <span style="background:#e2e8f0;color:#334155;padding:0.25rem 0.75rem;border-radius:9999px;font-weight:700;font-size:0.82rem;">适合个人独立执业医师</span>
+            <h3 style="font-size:1.45rem;margin-top:0.85rem;color:var(--dark);">单系统买断版</h3>
+            <div class="price"><del>RM 168</del> RM 99</div>
+            <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1.5rem;text-align:left;">
+              ✅ 任选其一买断：<br>
+              • <strong>方案 A</strong>：【门诊电子病历与经方系统 Pro v70.7】<br>
+              • <strong>方案 B</strong>：【大马诊所开单/正式收据/MC/记账系统】<br>
+              ✅ 免费定制贵院专属抬头<br>
+              ✅ 终身 0 月费，不限电脑台数
+            </p>
+          </div>
+          <a id="btn-buy-99" href="https://wa.me/601155513221?text=Hi%20郭医师%2C%20我想订购【RM99单系统买断版】%2C%20请发收款方式并帮我定制诊所抬头" class="btn btn-outline" style="width:100%;">
+            💬 选择 RM 99 单系统版
+          </a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div>
+            <span style="background:rgba(251,191,36,0.2);color:#fbbf24;padding:0.25rem 0.85rem;border-radius:9999px;font-weight:800;font-size:0.85rem;">🔥 90% 诊所馆长首选 · 一步到位</span>
+            <h3 style="font-size:1.55rem;margin-top:0.85rem;color:#ffffff;">诊所 4合1 全能旗舰包</h3>
+            <div class="price"><del>RM 388</del> RM 199</div>
+            <p style="font-size:0.92rem;color:#e2e8f0;margin-bottom:1.5rem;text-align:left;">
+              ✅ <strong>包含全部 4 套系统完整源码文件</strong>：<br>
+              1️⃣ 专业门诊电子病历系统 Pro (v70.7)<br>
+              2️⃣ 大马保险合规正式收据 (Receipt) + 中英病假单 (MC) 生成器<br>
+              3️⃣ 诊所每日营收统计与财务记账表<br>
+              4️⃣ 伤寒金匮名方智能速查助手<br>
+              ✅ <strong>免费帮您定制印好贵院抬头、SSM号与医师签名栏</strong><br>
+              ✅ 附赠 1 分钟图文教程 + 郭医师 WhatsApp 1对1 指导上手
+            </p>
+          </div>
+          <a id="btn-buy-199" href="https://wa.me/601155513221?text=Hi%20郭医师%2C%20我想订购【RM199诊所4合1全能旗舰包】%2C%20请发Maybank/DuitNow并帮我定制诊所抬头" class="btn btn-wa" style="width:100%;font-size:1.05rem;">
+            💬 立即 WhatsApp 锁定 RM 199 全套定制版
+          </a>
+        </div>
+      </div>
+
+      <div class="faq-box">
+        <h4 style="color:#92400e;margin-bottom:0.5rem;font-size:1.05rem;">🤝 交付流程（全程仅需 5 分钟）：</h4>
+        <p style="font-size:0.92rem;color:#78350f;">
+          <strong>第 1 步</strong>：点击上方绿色按钮 WhatsApp 联系郭医师（<code>011-5551 3221</code>），发给我们您的【诊所名称、地址、电话、SSM号】；<br>
+          <strong>第 2 步</strong>：通过 Maybank 商业账户（<code>XIA FENGLING ENTERPRISE</code>）或 DuitNow QR 转账 RM 99 / RM 199；<br>
+          <strong>第 3 步</strong>：我们在 5 分钟内通过 WhatsApp / Email 把定制好贵院抬头的免安装单文件包直接发给您，双击即用！
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <a id="floating-wa-btn" href="https://wa.me/601155513221?text=Hi%20郭医师%2C%20我想咨询诊所4合1病历与收据MC系统" class="floating-wa">
+    💬 联系郭医师定制
+  </a>
+
+  <footer>
+    <p><strong>XIA FENGLING ENTERPRISE</strong> (SSM Registration No: NS0316119-D)</p>
+    <p style="margin-top:0.4rem;">主理人：郭铭证中医师 (KEK MING ZHENG) · 服务于全马中医诊所与独立执业医师</p>
+    <p style="margin-top:0.4rem;">官方 WhatsApp: +60 11-5551 3221 | 官网: <a href="https://fenglingtcm.com" style="color:#0f766e;">fenglingtcm.com</a></p>
+  </footer>
+
+  <script>
+    (function() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var clinic = params.get('clinic');
+        if (clinic && clinic.trim()) {
+          var c = clinic.trim();
+          var enc = encodeURIComponent(c);
+          document.title = c + '｜专属 4合1 门诊电子病历 + 保险收据(Receipt) + 病假单(MC) 系统';
+          document.getElementById('vip-banner').innerHTML = '🎯 已为您自动载入 <strong>【' + c + '】</strong> 专属定制演示通道 —— 点下方绿色/蓝色按钮即可查看印有贵院抬头的收据、MC与病历系统！';
+          document.getElementById('header-badge').textContent = c + ' 专属定制演示版';
+          document.getElementById('hero-tag').textContent = '专为【' + c + '】量身定制 · 纯单机免安装 · 终身 0 月费';
+          document.getElementById('hero-title').innerHTML = '【' + c + '】专属 4合1 临床病历 + 保险理赔收据 + 中英病假单 (MC) 离线系统';
+          document.getElementById('demo-box-title').textContent = '👇 已为您预填【' + c + '】抬头，点击下方按钮免安装直接试用：';
+
+          document.getElementById('btn-demo-mc').href = 'clinic-billing-mc.html?clinic=' + enc;
+          document.getElementById('btn-demo-mc').innerHTML = '🧾 试用 1：【' + c + '】专属开单 / 正式收据(Receipt) / 病假单(MC)';
+          document.getElementById('btn-demo-emr').href = 'tcm-emr-pro.html?clinic=' + enc;
+          document.getElementById('btn-demo-emr').innerHTML = '⚡ 试用 2：【' + c + '】专属门诊电子病历系统 Pro (v70.7)';
+          document.getElementById('btn-demo-herb').href = 'tcm-assistant-demo.html?clinic=' + enc;
+
+          var wa99 = 'https://wa.me/601155513221?text=' + encodeURIComponent('Hi 郭医师，我是【' + c + '】，已试用专属演示系统，想订购【RM 99 单系统买断版】');
+          var wa199 = 'https://wa.me/601155513221?text=' + encodeURIComponent('Hi 郭医师，我是【' + c + '】，已试用专属演示系统，想订购【RM 199 诊所4合1全能旗舰包】');
+          document.getElementById('btn-buy-99').href = wa99;
+          document.getElementById('btn-buy-199').href = wa199;
+          document.getElementById('header-wa-btn').href = wa199;
+          document.getElementById('floating-wa-btn').href = wa199;
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

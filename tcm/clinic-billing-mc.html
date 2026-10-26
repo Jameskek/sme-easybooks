@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Billing System - AI Agent V15</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ================= Premium Elegant CSS ================= */
+        :root {
+            --bg-color: #f8f9fa; --card-bg: #ffffff; --text-main: #2c3e50; --text-muted: #7f8c8d;
+            --accent-blue: #005c97; --accent-hover: #004370; --border-color: #e2e8f0;
+            --danger: #e74c3c; --success: #27ae60; --gold: #d4af37;
+            --font-ui: 'Plus Jakarta Sans', sans-serif;
+            --font-elegant: 'Playfair Display', serif;
+        }
+
+        body { font-family: var(--font-ui); background-color: var(--bg-color); color: var(--text-main); padding-top: 40px; padding-bottom: 60px; -webkit-font-smoothing: antialiased; line-height: 1.6; overflow-x: hidden; }
+        h1, h2, h3, .elegant-title { font-family: var(--font-elegant); font-weight: 600; color: #1a252f; letter-spacing: 0.5px; }
+        h4, h5, h6 { font-family: var(--font-ui); font-weight: 600; letter-spacing: -0.3px; }
+
+        .apple-card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); border: 1px solid rgba(0,0,0,0.02); padding: 28px; margin-bottom: 24px; }
+        .apple-input, .apple-select, .apple-textarea { border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; width: 100%; outline: none; transition: all 0.3s ease; background-color: #fdfdfd; font-size: 14px; font-family: var(--font-ui); font-weight: 400; }
+        .apple-textarea { resize: vertical; min-height: 80px; }
+        .apple-input:focus, .apple-select:focus, .apple-textarea:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(0, 92, 151, 0.1); background-color: #ffffff; }
+
+        .apple-btn { background: var(--accent-blue); color: white; border-radius: 8px; padding: 10px 24px; border: none; font-weight: 500; font-size: 14px; letter-spacing: 0.3px; transition: all 0.2s ease; cursor: pointer; }
+        .apple-btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 92, 151, 0.2); }
+        .apple-btn-secondary { background: #f1f5f9; color: var(--text-main); }
+        .apple-btn-secondary:hover { background: #e2e8f0; box-shadow: none; }
+        .apple-btn-danger { background: var(--danger); color: white; }
+        .apple-btn-success { background: var(--success); color: white; }
+
+        .segmented-control { display: inline-flex; background: #f1f5f9; border-radius: 12px; padding: 5px; margin-bottom: 35px; flex-wrap: wrap; justify-content: center; }
+        .segmented-control button { background: transparent; border: none; border-radius: 8px; padding: 10px 24px; color: var(--text-muted); font-weight: 500; font-size: 14px; transition: all 0.3s ease; }
+        .segmented-control button.active { background: white; color: var(--accent-blue); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); font-weight: 600; }
+
+        .apple-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .apple-table th { text-align: left; padding: 14px 16px; color: var(--text-muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); }
+        .apple-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; vertical-align: middle; color: var(--text-main); }
+        .apple-table tbody tr:hover { background-color: #f8fafc; }
+
+        .apple-badge { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.3px; }
+        .badge-success { background: #e8f5e9; color: #2e7d32; }
+        .badge-warning { background: #fff8e1; color: #f57f17; }
+        .badge-danger { background: #ffebee; color: #c62828; }
+        .badge-vip { background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7); color: #5a4000; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .apple-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .apple-modal { background: var(--card-bg); border-radius: 16px; width: 90%; max-width: 500px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        
+        .report-card { padding: 20px; border-radius: 12px; background: #f8fafc; border: 1px solid var(--border-color); }
+        .report-value { font-family: var(--font-elegant); font-size: 24px; font-weight: 700; }
+
+        /* ================= AI AGENT SIDEBAR ================= */
+        .ai-fab {
+            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+            background: var(--accent-blue); color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 28px;
+            box-shadow: 0 10px 25px rgba(0, 92, 151, 0.4); cursor: pointer; z-index: 1050;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .ai-fab:hover { transform: scale(1.1); }
+        
+        .ai-sidebar {
+            position: fixed; top: 0; right: -400px; width: 380px; height: 100vh;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+            box-shadow: -10px 0 40px rgba(0,0,0,0.1); z-index: 1040;
+            transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex; flex-direction: column; border-left: 1px solid var(--border-color);
+        }
+        .ai-sidebar.open { right: 0; }
+        
+        .ai-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #fff; }
+        .ai-header h5 { margin: 0; font-family: var(--font-elegant); color: var(--accent-blue); font-weight: 700; }
+        .ai-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; }
+        
+        .ai-chat-box { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #f8fafc; }
+        .ai-msg { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 13px; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .ai-msg-user { background: var(--accent-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .ai-msg-ai { background: white; color: var(--text-main); border: 1px solid var(--border-color); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .ai-msg-system { background: #fff8e1; color: #b45309; align-self: center; font-size: 11px; padding: 6px 12px; border-radius: 20px; border: 1px solid #fde68a; text-align: center; max-width: 90%; }
+        
+        .ai-input-area { padding: 15px; background: #fff; border-top: 1px solid var(--border-color); }
+        .ai-input-wrapper { display: flex; gap: 10px; }
+        .ai-input-wrapper input { flex-grow: 1; border-radius: 20px; padding: 10px 15px; border: 1px solid var(--border-color); outline: none; font-size: 13px; }
+        .ai-input-wrapper input:focus { border-color: var(--accent-blue); }
+        .ai-input-wrapper button { background: var(--accent-blue); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .ai-input-wrapper button:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+        /* ================= PDF Export Styles ================= */
+        .pdf-loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; color: var(--accent-blue); }
+        .pdf-export-wrapper { position: fixed; top: 0; left: 200vw; z-index: -999; background: white; }
+        #pdf-export-container { display: inline-block; background: white; color: #111; font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; }
+        .pdf-page { background: white; box-sizing: border-box; color: #111; overflow: hidden; }
+
+        .ref-invoice-page {
+            width: 794px; min-height: 1123px; padding: 60px 64px 48px;
+            font-size: 13px; line-height: 1.35;
+        }
+        .ref-invoice-top { display: grid; grid-template-columns: 1fr 280px; gap: 48px; margin-bottom: 36px; }
+        .ref-clinic-name { font-size: 19px; font-weight: 700; margin-bottom: 8px; color: #111; }
+        .ref-small { font-size: 12px; color: #555; line-height: 1.45; }
+        .ref-meta { display: grid; grid-template-columns: 90px 1fr; row-gap: 6px; column-gap: 12px; font-size: 12px; }
+        .ref-meta-label { color: #555; text-align: right; }
+        .ref-meta-value { color: #111; font-weight: 600; text-align: left; overflow-wrap: anywhere; }
+        .ref-section-title { font-size: 13px; color: #555; font-weight: 700; margin-bottom: 8px; }
+        .ref-issued-to { margin-bottom: 28px; }
+        .ref-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 28px; }
+        .ref-table th { background: #e9e9e9; color: #333; font-size: 12px; font-weight: 700; padding: 9px 8px; border: 1px solid #d6d6d6; text-align: left; }
+        .ref-table td { padding: 9px 8px; border: 1px solid #dedede; font-size: 12px; color: #111; vertical-align: top; }
+        .ref-table .text-end { text-align: right; }
+        .ref-bottom-grid { display: grid; grid-template-columns: 1fr 260px; gap: 42px; align-items: start; margin-top: 8px; }
+        .ref-note-block { font-size: 12px; color: #111; }
+        .ref-note-title { font-weight: 700; margin-bottom: 6px; }
+        .ref-note-line { margin-bottom: 14px; color: #333; }
+        .ref-points { margin-top: 14px; }
+        .ref-total-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .ref-total-table td { padding: 7px 0; border-bottom: 1px solid #e5e5e5; }
+        .ref-total-table td:last-child { text-align: right; font-weight: 700; }
+        .ref-total-final td { border-top: 2px solid #111; border-bottom: none; padding-top: 10px; font-size: 13px; }
+        .ref-payment-summary { margin-top: 46px; border-top: 1px solid #111; padding-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; font-size: 12px; color: #333; }
+
+        .a5-mc-page {
+            width: 794px; height: 559px; padding: 34px 42px 28px;
+            font-family: var(--font-ui); font-size: 11px; line-height: 1.35;
+        }
+        .mc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--accent-blue); padding-bottom: 12px; margin-bottom: 14px; }
+        .mc-title { font-family: var(--font-elegant); font-size: 24px; font-weight: 700; color: var(--accent-blue); line-height: 1.05; }
+        .mc-doc-type { font-family: var(--font-elegant); font-size: 18px; font-weight: 700; text-align: right; text-transform: uppercase; }
+        .mc-subtitle { font-family: var(--font-elegant); color: #64748b; font-size: 12px; text-align: right; margin-top: 2px; }
+        .mc-info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 7px 0; margin-bottom: 12px; }
+        .mc-info-item { width: 50%; }
+        .mc-info-item.small { width: 25%; }
+        .mc-label { color: #64748b; display: inline-block; width: 86px; font-weight: 500; }
+        .mc-value { color: #111827; font-weight: 700; }
+        .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+        .mc-section-title { color: var(--accent-blue); font-size: 10px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 5px; }
+        .mc-text-box { min-height: 30px; color: #334155; }
+        .mc-rest-box { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+        .mc-footer { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: end; }
+        .mc-note { color: #64748b; font-size: 8.5px; text-align: justify; line-height: 1.35; }
+        .mc-sign-card { text-align: center; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 10px 9px; background: #fff; }
+        .mc-sign-name { font-family: var(--font-elegant); font-size: 20px; color: #111; font-weight: 700; border-bottom: 1px solid #111; padding-bottom: 6px; margin-bottom: 5px; }
+        .mc-sign-title { color: #64748b; font-size: 9px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .mc-sign-meta { color: #94a3b8; font-size: 8px; margin-top: 6px; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body style="padding-top:0;">
+<div id="custom-clinic-banner" style="background:linear-gradient(90deg, #0f766e, #0d9488); color:#fff; padding:10px 16px; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; position:sticky; top:0; z-index:9999; box-shadow:0 2px 10px rgba(0,0,0,0.15);">
+  <div>🎯 <strong id="banner-clinic-name">大马中医诊所</strong> 专属开单 / 保险收据 (Receipt) / 病假单 (MC) / 营收记账系统（免安装离线版）</div>
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <a id="banner-back-link" href="tcm-software-showcase.html" style="background:rgba(255,255,255,0.2); color:#fff; text-decoration:none; padding:5px 12px; border-radius:999px; font-weight:600; font-size:13px;">⬅ 返回 4合1 系统总览</a>
+    <a id="banner-wa-link" href="https://wa.me/601155513221?text=Hi%20郭医师%2C%20我已试用开单收据MC系统%2C%20想了解购买正式版(RM99/RM199)" target="_blank" style="background:#fbbf24; color:#0f172a; text-decoration:none; padding:5px 14px; border-radius:999px; font-weight:800; font-size:13px;">💬 WhatsApp 锁定本院正式版 (RM99/RM199)</a>
+  </div>
+</div>
+
+
+<div id="onboard-tutorial" style="background:#fef3c7; border:2px solid #d97706; border-radius:12px; padding:14px 18px; margin:12px auto; max-width:1280px; color:#78350f; font-family:-apple-system,BlinkMacSystemFont,sans-serif; box-shadow:0 4px 12px rgba(217,119,6,0.12);">
+  <div style="font-size:16px; font-weight:800; color:#92400e; margin-bottom:8px;">📖 电脑/手机 1分钟傻瓜式试用教程（已为您预装 3 位示例患者与示例单据，双击打开即可直接体验）：</div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; font-size:13px; line-height:1.5;">
+    <div style="background:#fffbeb; padding:10px; border-radius:8px; border:1px solid #fcd34d;">
+      <strong style="color:#b45309; font-size:14px;">第 ① 步：患者建档与查档</strong><br/>下方已预装 3 位示例患者；点击右上角蓝色【+ 新增患者 New Patient】即可录入新患者姓名、电话与 IC。
+    </div>
+    <div style="background:#fffbeb; padding:10px; border-radius:8px; border:1px solid #fcd34d;">
+      <strong style="color:#b45309; font-size:14px;">第 ② 步：一键开收据 (+ Bill)</strong><br/>直接点击任意患者右侧的【+ 开单 Bill】，或切换顶部【🧾 开单收据 Receipts】即可勾选诊金/针灸/中药并收款。
+    </div>
+    <div style="background:#fffbeb; padding:10px; border-radius:8px; border:1px solid #fcd34d;">
+      <strong style="color:#b45309; font-size:14px;">第 ③ 步：一键开病假单 (+ MC)</strong><br/>点击患者右侧的【+ 病假单 MC】，或切换顶部【📝 病假单 TCM MCs】，选好天数即可生成双语中医病假单。
+    </div>
+    <div style="background:#fffbeb; padding:10px; border-radius:8px; border:1px solid #fcd34d;">
+      <strong style="color:#b45309; font-size:14px;">第 ④ 步：导出 PDF 打印 / AI口令</strong><br/>在【Receipts】或【TCM MCs】页点击【📄 下载PDF】即可打印印有贵院抬头的正式单据；点右下角 🤖 可用中文口令自动开单！
+    </div>
+  </div>
+</div>
+
+
+<div id="app" class="container">
+    
+    <div v-if="isGeneratingPDF" class="pdf-loading-overlay">
+        <div class="spinner-border mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+        <h3 class="elegant-title">Generating PDF...</h3>
+        <p class="text-muted">{{ pdfType === 'invoice' ? 'Formatting professional invoice' : 'Formatting A5 Landscape' }}</p>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="elegant-title">{{ settings.clinicName || 'Clinic Premium' }}</h2>
+    </div>
+
+    <div class="text-center">
+        <div class="segmented-control">
+            <button :class="{ active: currentTab === 'patients' }" @click="currentTab = 'patients'">👥 患者档案 Patients</button>
+            <button :class="{ active: currentTab === 'invoices' }" @click="currentTab = 'invoices'">🧾 开单收据 Receipts</button>
+            <button :class="{ active: currentTab === 'mcs' }" @click="currentTab = 'mcs'">📝 病假单 TCM MCs</button>
+            <button :class="{ active: currentTab === 'finances' }" @click="currentTab = 'finances'">📊 营收报表 Reports</button>
+            <button :class="{ active: currentTab === 'settings' }" @click="currentTab = 'settings'">⚙️ 诊所设置 Settings</button>
+        </div>
+    </div>
+
+    <!-- ================= 1. PATIENTS MODULE ================= -->
+    <div v-if="currentTab === 'patients'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex gap-2 align-items-center">
+                <div style="width: 300px;"><input v-model="searchQuery" type="text" class="apple-input" placeholder="🔍 Search name, phone, ID..."></div>
+                <button v-if="selectedPatients.length > 0" class="apple-btn apple-btn-danger" @click="deleteSelectedPatients">Delete Selected ({{ selectedPatients.length }})</button>
+            </div>
+            <button class="apple-btn" @click="showPatientForm = !showPatientForm">{{ showPatientForm ? '取消 Cancel' : '+ 新增患者 New Patient' }}</button>
+        </div>
+
+        <div v-if="showPatientForm" class="apple-card" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+            <h5 class="mb-4">New Patient Profile</h5>
+            <div class="row g-3">
+                <div class="col-md-3"><input v-model="newPatient.name" type="text" class="apple-input" placeholder="Full Name *"></div>
+                <div class="col-md-2"><select v-model="newPatient.gender" class="apple-select"><option value="">Gender</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
+                <div class="col-md-2"><input v-model="newPatient.age" type="number" class="apple-input" placeholder="Age"></div>
+                <div class="col-md-5"><input v-model="newPatient.phone" type="text" class="apple-input" placeholder="Phone Number *"></div>
+                <div class="col-md-4"><input v-model="newPatient.idCard" type="text" class="apple-input" placeholder="ID / Passport No."></div>
+                <div class="col-md-8"><input v-model="newPatient.address" type="text" class="apple-input" placeholder="Home Address"></div>
+                <div class="col-md-10"><input v-model="newPatient.notes" type="text" class="apple-input" placeholder="Allergies & Medical Notes"></div>
+                <div class="col-md-2"><button class="apple-btn w-100 h-100" @click="addPatient">Save Profile</button></div>
+            </div>
+        </div>
+
+        <div class="apple-card">
+            <table class="apple-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" class="form-check-input" v-model="selectAllPatients"></th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Total Spent (LTV)</th>
+                        <th>Notes</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="p in filteredPatients" :key="p.id">
+                        <td><input type="checkbox" class="form-check-input" :value="p.id" v-model="selectedPatients"></td>
+                        <td><strong>{{ p.name }}</strong><span v-if="getPatientTotalSpent(p.id) >= 1000" class="apple-badge badge-vip ms-2">VIP</span></td>
+                        <td>{{ p.phone }}</td>
+                        <td><strong style="color: var(--accent-blue);">{{ settings.currencySymbol }} {{ getPatientTotalSpent(p.id).toFixed(2) }}</strong></td>
+                        <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted);">{{ p.notes || '-' }}</td>
+                        <td class="text-end">
+                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 14px; font-size: 12px;" @click="goToCreateMC(p.id)">Write MC</button>
+                            <button class="apple-btn apple-btn-secondary" style="padding: 6px 14px; font-size: 12px;" @click="goToCreateInvoice(p.id)">Bill</button>
+                        </td>
+                    </tr>
+                    <tr v-if="filteredPatients.length === 0"><td colspan="6" class="text-center text-muted py-4">No patients found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= 2. INVOICES & RECEIPTS MODULE ================= -->
+    <div v-if="currentTab === 'invoices'">
+        <div v-if="isCreatingInvoice" class="apple-card">
+            <h4 class="mb-4">Create New Invoice</h4>
+            <div class="mb-4">
+                <label class="form-label text-muted small text-uppercase">Select Patient</label>
+                <select v-model="newInvoice.patientId" class="apple-select">
+                    <option value="" disabled>Please select...</option>
+                    <option v-for="p in patients" :key="p.id" :value="p.id">{{ p.name }} ({{ p.phone }})</option>
+                </select>
+            </div>
+            <table class="apple-table mb-3">
+                <thead><tr><th>Description / Treatment</th><th>Price ({{ settings.currencySymbol }})</th><th>Qty</th><th>Amount</th><th></th></tr></thead>
+                <tbody>
+                    <tr v-for="(item, index) in newInvoice.items" :key="index">
+                        <td><input list="billing-items-list" v-model="item.desc" @change="autoFillPrice(item)" class="apple-input" placeholder="Select or type item..."></td>
+                        <td><input v-model.number="item.price" type="number" min="0" class="apple-input"></td>
+                        <td><input v-model.number="item.qty" type="number" min="1" class="apple-input"></td>
+                        <td style="vertical-align: middle;"><strong>{{ settings.currencySymbol }} {{ (item.price * item.qty).toFixed(2) }}</strong></td>
+                        <td><button class="apple-btn apple-btn-danger" style="padding: 6px 12px;" @click="newInvoice.items.splice(index, 1)">✕</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <datalist id="billing-items-list"><option v-for="bItem in settings.billingItems" :key="bItem.name" :value="bItem.name"></option></datalist>
+            <button class="apple-btn apple-btn-secondary mb-4" @click="newInvoice.items.push({desc:'', price:0, qty:1})">+ Add Item</button>
+            <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-2">
+                <h3 class="mb-0 elegant-title">Total: <span style="color: var(--accent-blue);">{{ settings.currencySymbol }} {{ calculateNewInvoiceTotal().toFixed(2) }}</span></h3>
+                <div>
+                    <button class="apple-btn apple-btn-secondary me-2" @click="isCreatingInvoice = false">Cancel</button>
+                    <button class="apple-btn" @click="saveInvoice">Save Invoice</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-else class="apple-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">Billing History</h5>
+                <button class="apple-btn" @click="isCreatingInvoice = true">+ New Invoice</button>
+            </div>
+            <table class="apple-table">
+                <thead><tr><th>Inv / Rec No.</th><th>Patient</th><th>Date</th><th>Total</th><th>Paid</th><th>Status</th><th class="text-end">Action</th></tr></thead>
+                <tbody>
+                    <tr v-for="inv in invoices" :key="inv.id">
+                        <td class="text-muted" style="font-size: 13px;">
+                            <div>{{ inv.id }}</div>
+                            <div v-if="inv.receiptId" style="color: var(--success); font-weight: 600;">{{ inv.receiptId }}</div>
+                        </td>
+                        <td><strong>{{ getPatientName(inv.patientId) }}</strong></td>
+                        <td>{{ inv.date }}</td>
+                        <td>{{ settings.currencySymbol }}{{ inv.total.toFixed(2) }}</td>
+                        <td>{{ settings.currencySymbol }}{{ getPaidAmount(inv).toFixed(2) }}</td>
+                        <td><span class="apple-badge" :class="getInvoiceStatusClass(inv)">{{ getInvoiceStatus(inv) }}</span></td>
+                        <td class="text-end">
+                            <button class="apple-btn apple-btn-success me-2" style="padding: 6px 10px; font-size: 12px;" @click="openPaymentModal(inv)">Pay</button>
+                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 10px; font-size: 12px;" @click="generatePDF('invoice', inv)">PDF</button>
+                            <button class="apple-btn apple-btn-danger" style="padding: 6px 10px; font-size: 12px;" @click="deleteInvoice(inv.id)">Del</button>
+                        </td>
+                    </tr>
+                    <tr v-if="invoices.length === 0"><td colspan="7" class="text-center text-muted py-4">No invoices found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= 3. TCM MC MODULE ================= -->
+    <div v-if="currentTab === 'mcs'">
+        <div v-if="isCreatingMC" class="apple-card">
+            <h4 class="mb-4 elegant-title">TCM Consultation Note & MC</h4>
+            <div class="row g-4 mb-4">
+                <div class="col-md-8">
+                    <label class="form-label text-muted small text-uppercase">Select Patient</label>
+                    <select v-model="newMC.patientId" class="apple-select">
+                        <option value="" disabled>Please select...</option>
+                        <option v-for="p in patients" :key="p.id" :value="p.id">{{ p.name }} ({{ p.phone }})</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small text-uppercase">Mode of Consultation</label>
+                    <select v-model="newMC.mode" class="apple-select">
+                        <option value="In-person">In-person 线下看诊</option>
+                        <option value="Online">Online Consultation 线上咨询</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label text-muted small text-uppercase">Clinical Complaint / 主诉</label>
+                    <textarea v-model="newMC.complaint" class="apple-textarea" placeholder="Describe patient's symptoms..."></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small text-uppercase">TCM Assessment / 中医辨证判断</label>
+                    <textarea v-model="newMC.assessment" class="apple-textarea" placeholder="e.g., 气血两虚, 脾胃虚寒..."></textarea>
+                </div>
+
+                <div class="col-md-12 border-top pt-3 mt-2">
+                    <h6 class="mb-3">Rest Advice / 休息建议</h6>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small text-uppercase">From / 开始日期</label>
+                    <input v-model="newMC.startDate" type="date" class="apple-input" @change="calculateMCDays">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small text-uppercase">To / 结束日期</label>
+                    <input v-model="newMC.endDate" type="date" class="apple-input" @change="calculateMCDays">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small text-uppercase">Total Days / 合计天数</label>
+                    <input v-model.number="newMC.days" type="number" class="apple-input" readonly style="background: #f8fafc; font-weight: 600; color: var(--accent-blue);">
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label text-muted small text-uppercase">Reason / 原因</label>
+                    <select v-model="newMC.reasonType" class="apple-select mb-2">
+                        <option value="Fever / flu-like symptoms">Fever / flu-like symptoms 发热或感冒样症状</option>
+                        <option value="Gastrointestinal discomfort">Gastrointestinal discomfort 胃肠不适</option>
+                        <option value="Pain condition">Pain condition 疼痛不适</option>
+                        <option value="Fatigue / dizziness">Fatigue / dizziness 乏力或头晕</option>
+                        <option value="Others">Others 其他</option>
+                    </select>
+                    <input v-if="newMC.reasonType === 'Others'" v-model="newMC.reasonOther" type="text" class="apple-input" placeholder="Please specify / 请注明">
+                </div>
+            </div>
+            <div class="text-end border-top pt-4 mt-2">
+                <button class="apple-btn apple-btn-secondary me-2" @click="isCreatingMC = false">Cancel</button>
+                <button class="apple-btn" @click="saveMC">Issue TCM MC</button>
+            </div>
+        </div>
+
+        <div v-else class="apple-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">TCM MC History</h5>
+                <button class="apple-btn" @click="isCreatingMC = true">+ Issue TCM MC</button>
+            </div>
+            <table class="apple-table">
+                <thead><tr><th>MC No.</th><th>Patient</th><th>Issue Date</th><th>Period</th><th>Days</th><th>Reason</th><th class="text-end">Action</th></tr></thead>
+                <tbody>
+                    <tr v-for="mc in mcs" :key="mc.id">
+                        <td class="text-muted" style="font-size: 13px;">{{ mc.id }}</td>
+                        <td><strong>{{ getPatientName(mc.patientId) }}</strong></td>
+                        <td>{{ mc.issueDate }}</td>
+                        <td style="font-size: 13px;">{{ mc.startDate }} to {{ mc.endDate }}</td>
+                        <td><span class="apple-badge badge-warning">{{ mc.days }} Days</span></td>
+                        <td style="color: var(--text-muted);">{{ mc.reasonType === 'Others' ? mc.reasonOther : mc.reasonType }}</td>
+                        <td class="text-end">
+                            <button class="apple-btn apple-btn-secondary me-2" style="padding: 6px 10px; font-size: 12px;" @click="generatePDF('mc', mc)">PDF</button>
+                            <button class="apple-btn apple-btn-danger" style="padding: 6px 10px; font-size: 12px;" @click="deleteMC(mc.id)">Del</button>
+                        </td>
+                    </tr>
+                    <tr v-if="mcs.length === 0"><td colspan="7" class="text-center text-muted py-5">No MC records found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= 4. FINANCES & REPORTS MODULE ================= -->
+    <div v-if="currentTab === 'finances'">
+        <h5 class="mb-3 elegant-title">Financial Reports</h5>
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="report-card" style="border-top: 4px solid var(--accent-blue);">
+                    <h6 class="text-muted text-uppercase small mb-3">All Time (总计)</h6>
+                    <div class="d-flex justify-content-between mb-1"><span class="text-muted">Income:</span> <strong style="color: var(--success);">{{ settings.currencySymbol }}{{ totalIncome.toFixed(2) }}</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span class="text-muted">Expense:</span> <strong style="color: var(--danger);">{{ settings.currencySymbol }}{{ totalExpense.toFixed(2) }}</strong></div>
+                    <div class="d-flex justify-content-between border-top pt-2"><span class="text-muted">Net:</span> <strong class="report-value" style="color: var(--accent-blue);">{{ settings.currencySymbol }}{{ (totalIncome - totalExpense).toFixed(2) }}</strong></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="report-card" style="border-top: 4px solid var(--success);">
+                    <h6 class="text-muted text-uppercase small mb-3">This Month (本月)</h6>
+                    <div class="d-flex justify-content-between mb-1"><span class="text-muted">Income:</span> <strong style="color: var(--success);">{{ settings.currencySymbol }}{{ currentMonthStats.income.toFixed(2) }}</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span class="text-muted">Expense:</span> <strong style="color: var(--danger);">{{ settings.currencySymbol }}{{ currentMonthStats.expense.toFixed(2) }}</strong></div>
+                    <div class="d-flex justify-content-between border-top pt-2"><span class="text-muted">Net:</span> <strong class="report-value" style="color: var(--success);">{{ settings.currencySymbol }}{{ currentMonthStats.net.toFixed(2) }}</strong></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="report-card" style="border-top: 4px solid var(--gold);">
+                    <h6 class="text-muted text-uppercase small mb-3">This Week (本周)</h6>
+                    <div class="d-flex justify-content-between mb-1"><span class="text-muted">Income:</span> <strong style="color: var(--success);">{{ settings.currencySymbol }}{{ currentWeekStats.income.toFixed(2) }}</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span class="text-muted">Expense:</span> <strong style="color: var(--danger);">{{ settings.currencySymbol }}{{ currentWeekStats.expense.toFixed(2) }}</strong></div>
+                    <div class="d-flex justify-content-between border-top pt-2"><span class="text-muted">Net:</span> <strong class="report-value" style="color: var(--gold);">{{ settings.currencySymbol }}{{ currentWeekStats.net.toFixed(2) }}</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="apple-card h-100">
+                    <h5 class="mb-3 elegant-title">🏆 Top 10 Patients (VIPs)</h5>
+                    <table class="apple-table">
+                        <thead><tr><th>Rank</th><th>Patient Name</th><th class="text-end">Total Spent</th></tr></thead>
+                        <tbody>
+                            <tr v-for="(p, index) in topPatients" :key="p.id">
+                                <td><span class="apple-badge" :class="index < 3 ? 'badge-warning' : 'badge-secondary'">#{{ index + 1 }}</span></td>
+                                <td><strong>{{ p.name }}</strong></td>
+                                <td class="text-end" style="color: var(--accent-blue); font-weight: 600;">{{ settings.currencySymbol }}{{ p.totalSpent.toFixed(2) }}</td>
+                            </tr>
+                            <tr v-if="topPatients.length === 0"><td colspan="3" class="text-center text-muted">No data yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="apple-card h-100">
+                    <h5 class="mb-3 elegant-title">🔥 Top 10 Products & Services</h5>
+                    <table class="apple-table">
+                        <thead><tr><th>Rank</th><th>Item Description</th><th>Qty</th><th class="text-end">Revenue</th></tr></thead>
+                        <tbody>
+                            <tr v-for="(prod, index) in topProducts" :key="prod.name">
+                                <td><span class="apple-badge" :class="index < 3 ? 'badge-success' : 'badge-secondary'">#{{ index + 1 }}</span></td>
+                                <td><strong>{{ prod.name }}</strong></td>
+                                <td>{{ prod.qty }}</td>
+                                <td class="text-end" style="color: var(--success); font-weight: 600;">{{ settings.currencySymbol }}{{ prod.revenue.toFixed(2) }}</td>
+                            </tr>
+                            <tr v-if="topProducts.length === 0"><td colspan="4" class="text-center text-muted">No data yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="apple-card" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+            <h5 class="mb-3">Add Manual Expense</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <input v-model.number="newTxn.amount" type="number" min="0" class="apple-input" placeholder="Amount">
+                </div>
+                <div class="col-md-4">
+                    <input v-model="newTxn.category" type="text" class="apple-input" placeholder="Category (e.g. Rent, Supplies)">
+                </div>
+                <div class="col-md-5">
+                    <input v-model="newTxn.desc" type="text" class="apple-input" placeholder="Description / Notes">
+                </div>
+                <div class="col-md-12 text-end">
+                    <button class="apple-btn apple-btn-danger" @click="addTransaction">Save Expense</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="apple-card">
+            <h5 class="mb-3">Ledger History</h5>
+            <table class="apple-table">
+                <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr v-for="txn in transactions" :key="txn.id">
+                        <td class="text-muted">{{ txn.date }}</td>
+                        <td><span class="apple-badge" :class="txn.type === 'Income' ? 'badge-success' : 'badge-danger'">{{ txn.type }}</span></td>
+                        <td><strong>{{ txn.category }}</strong></td>
+                        <td>{{ txn.desc }}</td>
+                        <td :style="{ color: txn.type === 'Income' ? 'var(--success)' : 'var(--danger)', fontWeight: 'bold' }">
+                            {{ txn.type === 'Income' ? '+' : '-' }}{{ settings.currencySymbol }}{{ txn.amount.toFixed(2) }}
+                        </td>
+                        <td>
+                            <button v-if="txn.category !== 'Invoice Payment'" class="apple-btn apple-btn-danger" style="padding: 4px 10px; font-size: 12px;" @click="deleteTransaction(txn.id)">Delete</button>
+                            <span v-else class="text-muted" style="font-size: 12px;">Auto-recorded</span>
+                        </td>
+                    </tr>
+                    <tr v-if="transactions.length === 0"><td colspan="6" class="text-center text-muted py-4">No records found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= 5. SETTINGS MODULE ================= -->
+    <div v-if="currentTab === 'settings'">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="apple-card mb-4">
+                    <h5 class="mb-4">🏥 Clinic & Practitioner Profile</h5>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">Clinic Name</label><input v-model="settings.clinicName" type="text" class="apple-input"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">Practitioner Name / 中医师姓名</label><input v-model="settings.doctorName" type="text" class="apple-input"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">T&CM Registration No. / 注册编号</label><input v-model="settings.practitionerNo" type="text" class="apple-input" placeholder="e.g., TCM-123456"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">Clinic Address</label><input v-model="settings.address" type="text" class="apple-input"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">Phone Number</label><input v-model="settings.phone" type="text" class="apple-input"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">Currency Symbol</label><input v-model="settings.currencySymbol" type="text" class="apple-input" style="font-weight: 600; color: var(--accent-blue);"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">Invoice Tax Label</label><input v-model="settings.invoiceTaxLabel" type="text" class="apple-input" placeholder="e.g., SST"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">Invoice Notes</label><input v-model="settings.invoiceNotes" type="text" class="apple-input" placeholder="e.g., No refund allow"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">E-Sign Role / 电子签名身份</label><input v-model="settings.signatureRole" type="text" class="apple-input" placeholder="Registered TCM Practitioner"></div>
+                </div>
+
+                <!-- AI AGENT CONFIGURATION -->
+                <div class="apple-card mb-4" style="border: 1px solid #d0d0fd; background: #f8f8ff;">
+                    <h5 class="mb-3">🤖 AI Agent Configuration</h5>
+                    <p class="text-muted" style="font-size: 13px;">Configure your AI Agent. It can read your screen and execute commands.</p>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">AI Provider</label><select v-model="settings.ai.provider" class="apple-select"><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option></select></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">API Key</label><input v-model="settings.ai.apiKey" type="password" class="apple-input"></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">Model Name</label><select v-model="settings.ai.model" class="apple-select"><option v-for="model in availableModels" :key="model" :value="model">{{ model }}</option></select></div>
+                    <div class="mb-3"><label class="form-label text-muted small text-uppercase">System Prompt (Do not remove JSON instructions)</label><textarea v-model="settings.ai.persona" class="apple-textarea" rows="8"></textarea></div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="apple-card mb-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <h5 class="mb-4">🔢 Numbering & Formats</h5>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6"><label class="form-label text-muted small text-uppercase">Invoice Prefix</label><input v-model="settings.invoicePrefix" type="text" class="apple-input"></div>
+                        <div class="col-6"><label class="form-label text-muted small text-uppercase">Next Invoice No.</label><input v-model.number="settings.invoiceNextNum" type="number" class="apple-input"></div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6"><label class="form-label text-muted small text-uppercase">Receipt Prefix</label><input v-model="settings.receiptPrefix" type="text" class="apple-input"></div>
+                        <div class="col-6"><label class="form-label text-muted small text-uppercase">Next Receipt No.</label><input v-model.number="settings.receiptNextNum" type="number" class="apple-input"></div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6"><label class="form-label text-muted small text-uppercase">MC Prefix</label><input v-model="settings.mcPrefix" type="text" class="apple-input"></div>
+                        <div class="col-6"><label class="form-label text-muted small text-uppercase">Next MC No.</label><input v-model.number="settings.mcNextNum" type="number" class="apple-input"></div>
+                    </div>
+                </div>
+
+                <div class="apple-card mb-4">
+                    <h5 class="mb-3">📋 Predefined Billing Items</h5>
+                    <div v-for="(bItem, index) in settings.billingItems" :key="index" class="d-flex gap-2 mb-2">
+                        <input v-model="bItem.name" class="apple-input" placeholder="Item Name">
+                        <input v-model.number="bItem.price" type="number" class="apple-input" style="width: 150px;">
+                        <button class="apple-btn apple-btn-danger" style="padding: 6px 12px;" @click="settings.billingItems.splice(index, 1)">✕</button>
+                    </div>
+                    <button class="apple-btn apple-btn-secondary mt-2" @click="settings.billingItems.push({name: '', price: 0})">+ Add Item</button>
+                </div>
+                
+                <!-- DATA BACKUP & RESTORE -->
+                <div class="apple-card mb-4" style="border: 1px solid #cbd5e1;">
+                    <h5 class="mb-3">💾 Data Backup & Restore</h5>
+                    <p class="text-muted" style="font-size: 13px;">Export all your data to a JSON file to prevent data loss, or restore from a previous backup.</p>
+                    <button class="apple-btn w-100 mb-3" @click="exportGlobalBackup">⬇️ Download Full Backup (.json)</button>
+                    <div class="p-3" style="background: #f1f5f9; border-radius: 8px; border: 1px dashed #94a3b8;">
+                        <label class="form-label text-muted small text-uppercase mb-1">Restore from Backup File</label>
+                        <input type="file" id="backupFile" accept=".json" class="apple-input mb-2" style="background: transparent; border: none; padding: 0;">
+                        <button class="apple-btn apple-btn-danger w-100" @click="importGlobalBackup">⬆️ Restore Data (Overwrites current)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAYMENT MODAL ================= -->
+    <div v-if="showPaymentModal" class="apple-modal-backdrop">
+        <div class="apple-modal">
+            <h4 class="mb-4 text-center elegant-title">Add Payment</h4>
+            <div class="mb-3 d-flex justify-content-between"><span class="text-muted">Invoice No:</span> <strong>{{ currentInvoice.id }}</strong></div>
+            <div class="mb-4 d-flex justify-content-between"><span class="text-muted">Balance Due:</span> <strong style="color: var(--danger); font-size: 18px;">{{ settings.currencySymbol }} {{ (currentInvoice.total - getPaidAmount(currentInvoice)).toFixed(2) }}</strong></div>
+            <div class="mb-3"><label class="form-label text-muted small text-uppercase">Payment Amount</label><input v-model.number="paymentForm.amount" type="number" :max="(currentInvoice.total - getPaidAmount(currentInvoice)).toFixed(2)" min="0.01" class="apple-input" style="font-size: 20px; font-weight: 600;"></div>
+            <div class="mb-4">
+                <label class="form-label text-muted small text-uppercase">Payment Method</label>
+                <select v-model="paymentForm.method" class="apple-select">
+                    <option value="Cash">💵 Cash</option>
+                    <option value="Visa">💳 Visa</option>
+                    <option value="Mastercard">💳 Mastercard</option>
+                    <option value="Bank Transfer">🏦 Bank Transfer</option>
+                    <option value="E-Wallet">📱 E-Wallet</option>
+                </select>
+            </div>
+            <div class="d-flex gap-3 mt-4"><button class="apple-btn apple-btn-secondary w-50" @click="showPaymentModal = false">Cancel</button><button class="apple-btn w-50" @click="savePayment">Confirm</button></div>
+        </div>
+    </div>
+
+    <!-- ================= AI AGENT SIDEBAR ================= -->
+    <div class="ai-fab" v-show="!isAiSidebarOpen" @click="isAiSidebarOpen = true">🤖</div>
+    
+    <div class="ai-sidebar" :class="{ 'open': isAiSidebarOpen }">
+        <div class="ai-header">
+            <h5>AI Agent</h5>
+            <button class="ai-close" @click="isAiSidebarOpen = false">✕</button>
+        </div>
+        <div class="ai-chat-box" id="aiChatBox">
+            <div v-if="chatHistory.length === 0" class="text-center text-muted mt-4">
+                <p style="font-size: 24px; margin-bottom: 5px;">👋</p>
+                <p style="font-size: 13px;">I can read your screen and execute commands. Try saying:<br><br><i>"Add a patient named John Doe, phone 12345"</i><br>or<br><i>"Kek paid in cash"</i></p>
+            </div>
+            <div v-for="(msg, index) in chatHistory" :key="index" class="ai-msg" :class="msg.role === 'user' ? 'ai-msg-user' : (msg.role === 'system' ? 'ai-msg-system' : 'ai-msg-ai')">
+                {{ msg.content }}
+            </div>
+            <div v-if="isAiTyping" class="typing-indicator">Agent is thinking...</div>
+        </div>
+        <div class="ai-input-area">
+            <div class="ai-input-wrapper">
+                <input v-model="chatInput" @keyup.enter="sendChatMessage" type="text" placeholder="Command me...">
+                <button @click="sendChatMessage" :disabled="isAiTyping">➤</button>
+            </div>
+            <div class="text-center mt-2"><a href="#" @click.prevent="clearChat" style="font-size: 11px; color: var(--danger); text-decoration: none;">Clear History</a></div>
+        </div>
+    </div>
+
+    <!-- ================= HIDDEN PDF EXPORT CONTAINER ================= -->
+    <div class="pdf-export-wrapper">
+        <div id="pdf-export-container" v-if="pdfData">
+
+            <!-- INVOICE / RECEIPT PDF TEMPLATE: REFERENCE STYLE, NO SIGNATURE -->
+            <div v-if="pdfType === 'invoice'" class="pdf-page ref-invoice-page">
+                <div class="ref-invoice-top">
+                    <div>
+                        <div class="ref-clinic-name">{{ settings.clinicName || 'FengLing TCM' }}</div>
+                        <div class="ref-small">
+                            {{ settings.address || 'Your Address Here' }}<br>
+                            Tel: {{ settings.phone || '-' }}
+                        </div>
+                    </div>
+                    <div class="ref-meta">
+                        <div class="ref-meta-label">Invoice:</div>
+                        <div class="ref-meta-value">#{{ pdfData.id }}</div>
+                        <template v-if="pdfData.receiptId">
+                            <div class="ref-meta-label">Receipt:</div>
+                            <div class="ref-meta-value">#{{ pdfData.receiptId }}</div>
+                        </template>
+                        <div class="ref-meta-label">Issued at:</div>
+                        <div class="ref-meta-value">{{ formatDateTime(pdfData.createdAt || pdfData.date) }}</div>
+                        <div class="ref-meta-label">Practitioner:</div>
+                        <div class="ref-meta-value">{{ pdfData.doctorName || settings.doctorName || '-' }}</div>
+                        <div class="ref-meta-label">Patient:</div>
+                        <div class="ref-meta-value">
+                            {{ getPatientName(pdfData.patientId) }}<br>
+                            <em style="font-weight: 400; color: #666;">{{ getPatientPhone(pdfData.patientId) || '-' }}</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ref-issued-to">
+                    <div class="ref-section-title">Issued to:</div>
+                    <div style="font-weight: 700;">{{ getPatientName(pdfData.patientId) }}</div>
+                    <div class="ref-small">{{ getPatientAddress(pdfData.patientId) || getPatientPhone(pdfData.patientId) || '-' }}</div>
+                </div>
+
+                <table class="ref-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 38%;">Item(s)</th>
+                            <th style="width: 15%;">Type</th>
+                            <th class="text-end" style="width: 14%;">Unit Price</th>
+                            <th class="text-end" style="width: 11%;">Quantity</th>
+                            <th class="text-end" style="width: 10%;">Tax</th>
+                            <th class="text-end" style="width: 12%;">Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, idx) in pdfData.items" :key="idx">
+                            <td>{{ item.desc || 'Treatment / Service' }}</td>
+                            <td>Treatment</td>
+                            <td class="text-end">{{ formatMoney(item.price) }}</td>
+                            <td class="text-end">{{ item.qty }}</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">{{ formatMoney((Number(item.price) || 0) * (Number(item.qty) || 1)) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ref-bottom-grid">
+                    <div class="ref-note-block">
+                        <div class="ref-note-title">Notes:</div>
+                        <div class="ref-note-line">{{ settings.invoiceNotes || 'No refund allow' }}</div>
+                        <div class="ref-points">
+                            <div class="ref-note-title">Points Received:</div>
+                            <div>{{ Math.floor(Number(pdfData.total) || 0) }}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <table class="ref-total-table">
+                            <tbody>
+                                <tr><td>Total before tax</td><td>{{ formatMoney(pdfData.total) }}</td></tr>
+                                <tr><td>{{ settings.invoiceTaxLabel || 'SST' }}</td><td>{{ formatMoney(0) }}</td></tr>
+                                <tr class="ref-total-final"><td>Total Amount Due</td><td>{{ formatMoney(pdfData.total) }}</td></tr>
+                                <tr><td>Amount Paid</td><td>{{ formatMoney(getPaidAmount(pdfData)) }}</td></tr>
+                                <tr><td>Balance</td><td>{{ formatMoney(Math.max(0, pdfData.total - getPaidAmount(pdfData))) }}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="ref-payment-summary">
+                    <div>
+                        <strong>Payment Summary</strong><br>
+                        Status: {{ getInvoiceStatus(pdfData) }}
+                    </div>
+                    <div style="text-align: right;">
+                        <template v-if="getLastPayment(pdfData)">
+                            {{ getLastPayment(pdfData).method }}<br>
+                            {{ formatDateTime(getLastPayment(pdfData).createdAt || getLastPayment(pdfData).date) }}
+                        </template>
+                        <template v-else>
+                            Payment pending
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TCM MC PDF TEMPLATE: A5 LANDSCAPE, ONE PAGE, TYPED DOCTOR E-SIGNATURE -->
+            <div v-if="pdfType === 'mc'" class="pdf-page a5-mc-page">
+                <div class="mc-header">
+                    <div>
+                        <div class="mc-title">{{ settings.clinicName || 'FengLing TCM' }}</div>
+                        <div class="ref-small">{{ settings.address || 'Your Address Here' }}<br>Tel: {{ settings.phone || '-' }}</div>
+                    </div>
+                    <div>
+                        <div class="mc-doc-type">Medical Certificate</div>
+                        <div class="mc-subtitle">中医诊疗与休息建议书</div>
+                        <div class="ref-small" style="text-align: right; margin-top: 6px;">
+                            MC No: <strong>{{ pdfData.id }}</strong><br>
+                            Date: <strong>{{ formatShortDate(pdfData.issueDate) }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mc-info-box">
+                    <div class="mc-info-item"><span class="mc-label">Name / 姓名:</span> <span class="mc-value">{{ getPatientName(pdfData.patientId) }}</span></div>
+                    <div class="mc-info-item"><span class="mc-label">IC/Passport:</span> <span class="mc-value">{{ getPatientIdCard(pdfData.patientId) || '-' }}</span></div>
+                    <div class="mc-info-item small"><span class="mc-label">Age / 年龄:</span> <span class="mc-value">{{ getPatientAge(pdfData.patientId) || '-' }}</span></div>
+                    <div class="mc-info-item small"><span class="mc-label">Gender / 性别:</span> <span class="mc-value">{{ getPatientGender(pdfData.patientId) || '-' }}</span></div>
+                    <div class="mc-info-item"><span class="mc-label">Mode / 方式:</span> <span class="mc-value">{{ pdfData.mode === 'In-person' ? 'In-person 线下' : 'Online 线上' }}</span></div>
+                </div>
+
+                <div class="mc-grid">
+                    <div>
+                        <div class="mc-section-title">Clinical Complaint / 主诉</div>
+                        <div class="mc-text-box">{{ pdfData.complaint || '-' }}</div>
+                    </div>
+                    <div>
+                        <div class="mc-section-title">TCM Assessment / 中医辨证</div>
+                        <div class="mc-text-box">{{ pdfData.assessment || '-' }}</div>
+                    </div>
+                </div>
+
+                <div class="mc-rest-box">
+                    <div>
+                        <div class="mc-section-title" style="color:#111;">Rest Advice / 休息建议</div>
+                        <div>
+                            Unfit for work/school for <strong style="font-size: 14px; border-bottom: 1px solid #111; padding: 0 5px;">{{ pdfData.days }}</strong> day(s).<br>
+                            From: <strong>{{ pdfData.startDate }}</strong> &nbsp; To: <strong>{{ pdfData.endDate }}</strong>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mc-section-title" style="color:#111;">Reason / 原因</div>
+                        <div>{{ pdfData.reasonType === 'Others' ? pdfData.reasonOther : pdfData.reasonType }}</div>
+                    </div>
+                </div>
+
+                <div class="mc-footer">
+                    <div class="mc-note">
+                        <strong>Important Note / 重要说明:</strong><br>
+                        This document is issued as a Traditional Chinese Medicine rest recommendation based on TCM consultation. It is not intended to replace emergency medical care, hospital diagnosis, statutory medical certification, or medical assessment by a registered medical practitioner where required. 本文件为基于中医咨询后出具的休息建议，不替代急诊处理、医院诊断、法定医学证明，或雇主/保险/学校要求的注册西医医生证明。
+                    </div>
+                    <div class="mc-sign-card">
+                        <div class="mc-sign-name">{{ settings.doctorName || 'Practitioner Name' }}</div>
+                        <div class="mc-sign-title">{{ settings.signatureRole || 'Registered TCM Practitioner' }}<br>{{ settings.practitionerNo || 'Registration No.' }}</div>
+                        <div class="mc-sign-meta">
+                            Electronically signed by typed practitioner name<br>
+                            Signed at: {{ pdfSignature ? formatStoredDateTime(pdfSignature.signedAt) : '' }}<br>
+                            Verification: {{ pdfSignature ? pdfSignature.hash : '' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
+
+createApp({
+    setup() {
+        const currentTab = ref('patients');
+        const patients = ref([]);
+        const invoices = ref([]);
+        const mcs = ref([]); 
+        const transactions = ref([]); 
+        
+        // AI Agent State
+        const isAiSidebarOpen = ref(false);
+        const chatHistory = ref([]);
+        const chatInput = ref('');
+        const isAiTyping = ref(false);
+
+        // FIX: Added payInvoice to AI Persona
+        const defaultAiPersona = `You are an advanced AI Agent integrated into a Clinic Billing System. You can read the screen context and execute commands to control the system.
+If the user asks you to perform an action, you MUST output a JSON block and you must not say you cannot operate the system.
+Return one command:
+\`\`\`json
+{"action": "commandName", "data": {"key": "value"}}
+\`\`\`
+Or multiple commands:
+\`\`\`json
+{"actions": [{"action": "commandName", "data": {"key": "value"}}]}
+\`\`\`
+Supported actions:
+1. navigate: {"tab": "patients" | "invoices" | "mcs" | "finances" | "settings"}
+2. addPatient: {"name": "string", "phone": "string", "gender": "string", "age": number, "idCard": "string", "address": "string", "notes": "string"}
+3. addExpense: {"amount": number, "category": "string", "desc": "string"}
+4. createInvoice: {"patientName": "string", "items": [{"desc": "string", "price": number, "qty": number}]}
+5. createMC: {"patientName": "string", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "days": number, "mode": "In-person" | "Online", "reasonType": "Fever / flu-like symptoms" | "Gastrointestinal discomfort" | "Pain condition" | "Fatigue / dizziness" | "Others", "reasonOther": "string", "complaint": "string", "assessment": "string"}
+6. updateSetting: {"key": "clinicName" | "doctorName", "value": "string"}
+7. payInvoice: {"patientName": "string", "method": "Cash" | "Visa" | "Mastercard" | "Bank Transfer" | "E-Wallet", "amount": number | "full"}
+
+CRITICAL RULES for payInvoice:
+- If the user says "paid", "cash", "visa", etc., use payInvoice, NOT createInvoice.
+- If amount is not specified, use "full".
+CRITICAL RULES for createInvoice:
+- Match the patientName with the Available Patients in the context.
+- If price is unknown, use the Predefined Items in the context.
+CRITICAL RULES for createMC:
+- Use today's date if the user does not specify a startDate.
+- If the user gives days but no endDate, calculate the endDate inclusively.
+If no action is needed, just reply normally.`;
+
+        const settings = ref({
+            clinicName: '仁安中医诊所 Ren An TCM Clinic (演示样板)', 
+            doctorName: '主治中医师 (Registered TCM Practitioner)', 
+            practitionerNo: 'TCM-',
+            address: '41, Jalan Sri Bintang 3, Taman Sri Bintang, Kepong, 52100 Kuala Lumpur', 
+            phone: '03-6276 9133 / 012-507 3660', 
+            currencySymbol: 'RM',
+            invoiceTaxLabel: 'SST',
+            invoiceNotes: 'No refund allow',
+            signatureRole: 'Registered TCM Practitioner',
+            invoicePrefix: 'INV-', invoiceNextNum: 1000, 
+            receiptPrefix: 'REC-', receiptNextNum: 1000, 
+            mcPrefix: 'MC-', mcNextNum: 1000, 
+            billingItems: [{ name: '中医四诊问诊 (Consultation)', price: 40 }, { name: '针灸治疗 (Acupuncture)', price: 65 }, { name: '科学中药颗粒 (Herbal Granules)', price: 85 }, { name: '推拿正骨 (Tuina)', price: 80 }],
+            ai: { provider: 'openai', apiKey: '', model: 'gpt-5.5', persona: defaultAiPersona }
+        });
+        
+        const searchQuery = ref('');
+        const showPatientForm = ref(false);
+        const newPatient = ref({ name: '', gender: '', age: '', phone: '', idCard: '', address: '', notes: '' });
+        
+        // Bulk Delete State
+        const selectedPatients = ref([]);
+        const selectAllPatients = computed({
+            get: () => patients.value.length > 0 && selectedPatients.value.length === patients.value.length,
+            set: (val) => { selectedPatients.value = val ? patients.value.map(p => p.id) : []; }
+        });
+
+        const isCreatingInvoice = ref(false);
+        const newInvoice = ref({ patientId: '', items: [{desc: '', price: 0, qty: 1}] });
+        
+        const isCreatingMC = ref(false);
+        const newMC = ref({ 
+            patientId: '', mode: 'In-person', complaint: '', assessment: '', 
+            startDate: '', endDate: '', days: 0, reasonType: 'Fever / flu-like symptoms', reasonOther: '' 
+        });
+
+        const showPaymentModal = ref(false);
+        const currentInvoice = ref(null);
+        const paymentForm = ref({ amount: 0, method: 'Visa' }); 
+
+        const newTxn = ref({ type: 'Expense', amount: 0, category: '', desc: '' }); 
+
+        const pdfType = ref('');
+        const pdfData = ref(null);
+        const pdfSignature = ref(null);
+        const isGeneratingPDF = ref(false);
+
+        const generateSafeId = (prefix) => prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+        const parseDate = (value) => {
+            if (!value) return null;
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date;
+        };
+
+        const formatStoredDateTime = (value) => {
+            const date = parseDate(value);
+            if (!date) return value || '-';
+            return date.toLocaleString('en-MY', {
+                year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        const formatDateTime = (value) => {
+            const date = parseDate(value);
+            if (!date) return value || '-';
+            return date.toLocaleString('en-MY', {
+                year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        const formatShortDate = (value) => {
+            const date = parseDate(value);
+            if (!date) return value || '-';
+            return date.toLocaleDateString('en-MY', {
+                year: 'numeric', month: 'short', day: '2-digit'
+            });
+        };
+
+        const formatMoney = (amount) => {
+            const value = Number(amount) || 0;
+            return `${settings.value.currencySymbol}${value.toFixed(2)}`;
+        };
+
+        const getLastPayment = (inv) => {
+            if (!inv || !inv.payments || inv.payments.length === 0) return null;
+            return inv.payments[inv.payments.length - 1];
+        };
+
+        const createSignatureHash = (source) => {
+            let hash = 0;
+            for (let i = 0; i < source.length; i++) {
+                hash = ((hash << 5) - hash) + source.charCodeAt(i);
+                hash |= 0;
+            }
+            return `ESIG-${Math.abs(hash).toString(36).toUpperCase().padStart(8, '0').slice(0, 8)}`;
+        };
+
+        const buildESignatureRecord = (data) => {
+            const signedAt = new Date().toISOString();
+            const source = [
+                data.id, data.patientId, data.issueDate, data.startDate, data.endDate,
+                settings.value.doctorName, settings.value.practitionerNo, signedAt
+            ].join('|');
+            return { signedAt, hash: createSignatureHash(source) };
+        };
+
+        const waitForPdfImages = async (element) => {
+            const images = Array.from(element.querySelectorAll('img'));
+            await Promise.all(images.map((img) => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            }));
+        };
+
+        const fitPdfToSinglePage = (pdf, canvas, pageWidthMm, pageHeightMm, marginMm = 0) => {
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            const maxWidth = pageWidthMm - (marginMm * 2);
+            const maxHeight = pageHeightMm - (marginMm * 2);
+            const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
+            const renderWidth = canvas.width * ratio;
+            const renderHeight = canvas.height * ratio;
+            const x = marginMm + ((maxWidth - renderWidth) / 2);
+            const y = marginMm + ((maxHeight - renderHeight) / 2);
+            pdf.addImage(imgData, 'JPEG', x, y, renderWidth, renderHeight);
+        };
+
+        const normalizeText = (value) => String(value || '').toLowerCase().replace(/\s+/g, '').trim();
+
+        const getLocalDateInput = (date = new Date()) => {
+            const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+            return local.toISOString().slice(0, 10);
+        };
+
+        const addDays = (dateStr, daysToAdd) => {
+            const date = new Date(`${dateStr}T00:00:00`);
+            date.setDate(date.getDate() + daysToAdd);
+            return getLocalDateInput(date);
+        };
+
+        const getInclusiveDays = (startDate, endDate) => {
+            const start = new Date(`${startDate}T00:00:00`);
+            const end = new Date(`${endDate}T00:00:00`);
+            if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+            return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        };
+
+        const findPatientByName = (patientName) => {
+            const q = normalizeText(patientName);
+            if (!q) return null;
+            return patients.value.find(p => normalizeText(p.name) === q)
+                || patients.value.find(p => normalizeText(p.name).includes(q) || q.includes(normalizeText(p.name)))
+                || patients.value.find(p => normalizeText(p.phone).includes(q));
+        };
+
+        const findBillingItem = (desc) => {
+            const q = normalizeText(desc);
+            if (!q) return null;
+            const aliases = [
+                { match: ['consultation', 'consult', '问诊', '諮询', '咨询'], target: 'consultation' },
+                { match: ['tuina', '推拿'], target: 'tuina' }
+            ];
+            const alias = aliases.find(a => a.match.some(term => q.includes(normalizeText(term))));
+            const lookup = alias ? alias.target : q;
+            return settings.value.billingItems.find(item => normalizeText(item.name) === lookup)
+                || settings.value.billingItems.find(item => normalizeText(item.name).includes(lookup) || lookup.includes(normalizeText(item.name)));
+        };
+
+        const normalizeInvoiceItems = (items = []) => {
+            return items.map(item => {
+                const predefined = findBillingItem(item.desc || item.name || item.item);
+                const desc = item.desc || item.name || item.item || (predefined ? predefined.name : '');
+                const price = Number(item.price ?? item.unitPrice ?? (predefined ? predefined.price : 0)) || 0;
+                const qty = Number(item.qty ?? item.quantity ?? 1) || 1;
+                return { desc: predefined ? predefined.name : desc, price, qty };
+            }).filter(item => item.desc);
+        };
+
+        const normalizeReasonType = (value) => {
+            const q = normalizeText(value);
+            if (!q) return 'Others';
+            if (q.includes('fever') || q.includes('flu') || q.includes('发热') || q.includes('發熱') || q.includes('发烧') || q.includes('感冒')) return 'Fever / flu-like symptoms';
+            if (q.includes('gastro') || q.includes('胃') || q.includes('肠') || q.includes('腸') || q.includes('腹') || q.includes('泻') || q.includes('瀉')) return 'Gastrointestinal discomfort';
+            if (q.includes('pain') || q.includes('痛') || q.includes('疼')) return 'Pain condition';
+            if (q.includes('fatigue') || q.includes('dizziness') || q.includes('累') || q.includes('乏力') || q.includes('晕') || q.includes('暈')) return 'Fatigue / dizziness';
+            const allowed = ['Fever / flu-like symptoms', 'Gastrointestinal discomfort', 'Pain condition', 'Fatigue / dizziness', 'Others'];
+            return allowed.find(item => normalizeText(item) === q) || 'Others';
+        };
+
+        const createInvoiceFromAI = (data = {}) => {
+            const targetPatient = findPatientByName(data.patientName || data.patient || data.name);
+            if (!targetPatient) {
+                chatHistory.value.push({ role: 'system', content: `System Error: Patient '${data.patientName || data.patient || data.name || ''}' not found. Please add the patient first.` });
+                return false;
+            }
+
+            const items = normalizeInvoiceItems(data.items || data.services || data.treatments || []);
+            if (items.length === 0 || items.every(item => item.price <= 0)) {
+                chatHistory.value.push({ role: 'system', content: `System Error: No billable items found for ${targetPatient.name}. Please include known items such as Consultation or Tuina.` });
+                return false;
+            }
+
+            const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const customId = settings.value.invoicePrefix + settings.value.invoiceNextNum;
+            settings.value.invoiceNextNum++;
+
+            invoices.value.unshift({
+                id: customId,
+                patientId: targetPatient.id,
+                doctorName: settings.value.doctorName,
+                date: new Date().toLocaleDateString(),
+                createdAt: new Date().toISOString(),
+                items,
+                total,
+                payments: [],
+                receiptId: null
+            });
+
+            currentTab.value = 'invoices';
+            isCreatingInvoice.value = false;
+            chatHistory.value.push({ role: 'system', content: `System: Invoice ${customId} created for ${targetPatient.name} with total ${settings.value.currencySymbol}${total.toFixed(2)}.` });
+            return true;
+        };
+
+        const createMCFromAI = (data = {}) => {
+            const targetPatient = findPatientByName(data.patientName || data.patient || data.name);
+            if (!targetPatient) {
+                chatHistory.value.push({ role: 'system', content: `System Error: Patient '${data.patientName || data.patient || data.name || ''}' not found. Please add the patient first.` });
+                return false;
+            }
+
+            const startDate = data.startDate || data.from || getLocalDateInput();
+            let days = Number(data.days || data.totalDays || 0);
+            let endDate = data.endDate || data.to || '';
+            if (!endDate && days > 0) endDate = addDays(startDate, days - 1);
+            if (endDate && days <= 0) days = getInclusiveDays(startDate, endDate);
+            if (!endDate) {
+                days = 1;
+                endDate = startDate;
+            }
+            if (days <= 0) {
+                chatHistory.value.push({ role: 'system', content: 'System Error: MC end date cannot be earlier than start date.' });
+                return false;
+            }
+
+            const customId = settings.value.mcPrefix + settings.value.mcNextNum;
+            settings.value.mcNextNum++;
+            const rawReason = data.reasonType || data.reason || data.reasonOther || data.complaint || '';
+            const reasonType = normalizeReasonType(rawReason);
+
+            mcs.value.unshift({
+                id: customId,
+                patientId: targetPatient.id,
+                issueDate: new Date().toLocaleDateString(),
+                createdAt: new Date().toISOString(),
+                mode: data.mode === 'Online' ? 'Online' : 'In-person',
+                complaint: data.complaint || rawReason || '',
+                assessment: data.assessment || '',
+                startDate,
+                endDate,
+                days,
+                reasonType,
+                reasonOther: reasonType === 'Others' ? (data.reasonOther || rawReason || 'Rest advised') : ''
+            });
+
+            currentTab.value = 'mcs';
+            isCreatingMC.value = false;
+            chatHistory.value.push({ role: 'system', content: `System: MC ${customId} created for ${targetPatient.name} (${days} day${days > 1 ? 's' : ''}).` });
+            return true;
+        };
+
+        // FIX: Added payInvoiceFromAI logic
+        const payInvoiceFromAI = (data = {}) => {
+            const targetPatient = findPatientByName(data.patientName || data.patient || data.name);
+            if (!targetPatient) {
+                chatHistory.value.push({ role: 'system', content: `System Error: Patient '${data.patientName || data.patient || data.name || ''}' not found.` });
+                return false;
+            }
+
+            // Find latest unpaid invoice
+            const unpaidInvoices = invoices.value.filter(inv => inv.patientId === targetPatient.id && getInvoiceStatus(inv) !== 'Paid');
+            if (unpaidInvoices.length === 0) {
+                chatHistory.value.push({ role: 'system', content: `System Error: No unpaid invoices found for ${targetPatient.name}.` });
+                return false;
+            }
+
+            const invToPay = unpaidInvoices[0]; // Pay the most recent unpaid one
+            const balance = invToPay.total - getPaidAmount(invToPay);
+            let payAmount = balance;
+            
+            if (data.amount && data.amount !== 'full') {
+                payAmount = Number(data.amount);
+            }
+            if (payAmount > balance) payAmount = balance;
+
+            const dateStr = new Date().toLocaleDateString();
+            const method = data.method || 'Cash';
+
+            invToPay.payments.push({ date: dateStr, createdAt: new Date().toISOString(), amount: payAmount, method: method });
+
+            if (getInvoiceStatus(invToPay) === 'Paid' && !invToPay.receiptId) {
+                invToPay.receiptId = settings.value.receiptPrefix + settings.value.receiptNextNum;
+                settings.value.receiptNextNum++;
+            }
+
+            transactions.value.unshift({
+                id: generateSafeId('TXN-'),
+                date: dateStr,
+                type: 'Income',
+                category: 'Invoice Payment',
+                amount: payAmount,
+                desc: `Payment for ${invToPay.id} (${method})`
+            });
+
+            currentTab.value = 'invoices';
+            chatHistory.value.push({ role: 'system', content: `System: Payment of ${settings.value.currencySymbol}${payAmount.toFixed(2)} recorded for ${targetPatient.name} (${invToPay.id}).` });
+            return true;
+        };
+
+        const inferLocalCommand = (text) => {
+            const lower = normalizeText(text);
+            const targetPatient = patients.value.find(p => lower.includes(normalizeText(p.name)));
+            if (!targetPatient) return null;
+
+            // FIX: Check for payment intent FIRST
+            const isPaymentIntent = /付|还|pay|paid|cash|visa|mastercard|ewallet|bank/i.test(lower);
+            if (isPaymentIntent) {
+                let method = 'Cash';
+                if (lower.includes('visa')) method = 'Visa';
+                else if (lower.includes('master')) method = 'Mastercard';
+                else if (lower.includes('bank') || lower.includes('转账') || lower.includes('轉賬')) method = 'Bank Transfer';
+                else if (lower.includes('ewallet') || lower.includes('电子钱包') || lower.includes('tng') || lower.includes('grab')) method = 'E-Wallet';
+
+                return { action: 'payInvoice', data: { patientName: targetPatient.name, method: method, amount: 'full' } };
+            }
+
+            const isInvoiceIntent = /开单|開單|发票|發票|invoice|bill|billing|项目|項目/.test(lower);
+            if (isInvoiceIntent) {
+                const items = [];
+                settings.value.billingItems.forEach(item => {
+                    if (lower.includes(normalizeText(item.name))) items.push({ desc: item.name, price: Number(item.price) || 0, qty: 1 });
+                });
+                if ((lower.includes('问诊') || lower.includes('咨询') || lower.includes('consultation')) && !items.some(i => normalizeText(i.desc) === 'consultation')) {
+                    const consultation = findBillingItem('Consultation');
+                    if (consultation) items.push({ desc: consultation.name, price: Number(consultation.price) || 0, qty: 1 });
+                }
+                if ((lower.includes('推拿') || lower.includes('tuina')) && !items.some(i => normalizeText(i.desc) === 'tuina')) {
+                    const tuina = findBillingItem('Tuina');
+                    if (tuina) items.push({ desc: tuina.name, price: Number(tuina.price) || 0, qty: 1 });
+                }
+                if (items.length > 0) return { action: 'createInvoice', data: { patientName: targetPatient.name, items } };
+            }
+
+            const isMCIntent = /mc|medicalcertificate|病假|假单|假紙|休息证明|休息證明|休息建议|休息建議/.test(lower);
+            if (isMCIntent) {
+                const dayMatch = text.match(/(\d+)\s*(天|day|days)/i);
+                const days = dayMatch ? Number(dayMatch[1]) : 1;
+                const startDate = getLocalDateInput();
+                return {
+                    action: 'createMC',
+                    data: {
+                        patientName: targetPatient.name,
+                        startDate,
+                        days,
+                        endDate: addDays(startDate, days - 1),
+                        reasonType: normalizeReasonType(text),
+                        complaint: text,
+                        mode: lower.includes('online') || lower.includes('线上') || lower.includes('線上') ? 'Online' : 'In-person'
+                    }
+                };
+            }
+
+            return null;
+        };
+
+        const availableModels = computed(() => {
+            if (settings.value.ai.provider === 'openai') return ['gpt-5.5', 'gpt-5.4-mini'];
+            if (settings.value.ai.provider === 'gemini') return ['gemini-3.5-flash', 'gemini-3.1-pro-preview', 'gemini-3-flash-preview'];
+            if (settings.value.ai.provider === 'deepseek') return ['deepseek-v4-flash', 'deepseek-v4-pro'];
+            return [];
+        });
+
+        watch(() => settings.value.ai.provider, (newProvider) => {
+            if (newProvider === 'openai') settings.value.ai.model = 'gpt-5.5';
+            else if (newProvider === 'gemini') settings.value.ai.model = 'gemini-3.5-flash';
+            else if (newProvider === 'deepseek') settings.value.ai.model = 'deepseek-v4-flash';
+        });
+
+        onMounted(() => {
+            const load = (key, refVar) => { const d = localStorage.getItem(key); if(d) refVar.value = JSON.parse(d); };
+            load('clinic_patients_v11', patients);
+            load('clinic_invoices_v11', invoices);
+            load('clinic_mcs_v11', mcs);
+            load('clinic_txns_v11', transactions); 
+            load('clinic_chat_v13', chatHistory);
+
+            if (patients.value.length === 0) {
+                patients.value = [
+                    { id: "P-DEMO01", name: "陈志强 Tan Chee Keong", gender: "Male", age: 42, phone: "012-3456789", idCard: "840512-14-5521", address: "Kepong, Kuala Lumpur", notes: "肩颈酸痛、长期熬夜失眠（示例患者，可直接点右侧 +Bill 或 +MC 试用）" },
+                    { id: "P-DEMO02", name: "林美玲 Lim Mei Ling", gender: "Female", age: 35, phone: "016-8899123", idCard: "910820-10-6632", address: "Sri Petaling, KL", notes: "气血虚弱、经期调理（VIP老患者示例）" },
+                    { id: "P-DEMO03", name: "黄伟杰 Wong Wei Jie", gender: "Male", age: 51, phone: "019-2233445", idCard: "750311-14-5119", address: "Petaling Jaya", notes: "腰椎劳损、针灸疗程跟进" }
+                ];
+            }
+            if (invoices.value.length === 0) {
+                invoices.value = [
+                    {
+                        id: "INV-1001", patientId: "P-DEMO01", doctorName: settings.value.doctorName,
+                        date: new Date().toLocaleDateString(), createdAt: new Date().toISOString(),
+                        items: [
+                            { desc: "中医四诊问诊 (Consultation)", price: 40, qty: 1 },
+                            { desc: "针灸治疗 (Acupuncture)", price: 65, qty: 1 },
+                            { desc: "科学中药颗粒 (Herbal Granules)", price: 85, qty: 1 }
+                        ],
+                        total: 190,
+                        payments: [{ date: new Date().toLocaleDateString(), createdAt: new Date().toISOString(), amount: 190, method: "E-Wallet" }],
+                        receiptId: "REC-1001"
+                    },
+                    {
+                        id: "INV-1002", patientId: "P-DEMO02", doctorName: settings.value.doctorName,
+                        date: new Date().toLocaleDateString(), createdAt: new Date().toISOString(),
+                        items: [
+                            { desc: "中医四诊问诊 (Consultation)", price: 40, qty: 1 },
+                            { desc: "科学中药颗粒 (Herbal Granules)", price: 85, qty: 2 }
+                        ],
+                        total: 210,
+                        payments: [],
+                        receiptId: null
+                    }
+                ];
+            }
+            if (mcs.value.length === 0) {
+                const today = getLocalDateInput();
+                mcs.value = [
+                    {
+                        id: "MC-1001", patientId: "P-DEMO01", issueDate: new Date().toLocaleDateString(),
+                        createdAt: new Date().toISOString(), mode: "In-person",
+                        complaint: "Acute lower back & neck muscle sprain (急性腰颈部筋膜劳损疼痛)",
+                        assessment: "Qi and blood stagnation in meridians (气滞血瘀，经络痹阻)",
+                        startDate: today, endDate: today, days: 1,
+                        reasonType: "Pain condition", reasonOther: ""
+                    }
+                ];
+            }
+            if (transactions.value.length === 0) {
+                transactions.value = [
+                    { id: "TXN-DEMO1", date: new Date().toLocaleDateString(), type: "Income", category: "Invoice Payment", amount: 190, desc: "Payment for INV-1001 (E-Wallet)" }
+                ];
+            }
+
+            
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const customClinic = urlParams.get('clinic');
+            const savedSettings = localStorage.getItem('clinic_settings_v11');
+            if (savedSettings) {
+                const parsed = JSON.parse(savedSettings);
+                if (!parsed.receiptPrefix) parsed.receiptPrefix = 'REC-';
+                if (!parsed.receiptNextNum) parsed.receiptNextNum = 1000;
+                if (!parsed.invoiceTaxLabel) parsed.invoiceTaxLabel = 'SST';
+                if (!parsed.invoiceNotes) parsed.invoiceNotes = 'No refund allow';
+                if (!parsed.signatureRole) parsed.signatureRole = 'Registered TCM Practitioner';
+                if (!parsed.ai) parsed.ai = settings.value.ai;
+                if (!parsed.ai.persona || !parsed.ai.persona.includes('payInvoice')) {
+                    parsed.ai.persona = defaultAiPersona;
+                }
+                settings.value = parsed;
+            }
+            if (customClinic && customClinic.trim()) {
+                const cName = customClinic.trim();
+                settings.value.clinicName = cName;
+                document.title = cName + '｜专属收费收据(Receipt)与病假单(MC)系统';
+                const bName = document.getElementById('banner-clinic-name');
+                if (bName) bName.textContent = '【' + cName + '】';
+                const bBack = document.getElementById('banner-back-link');
+                if (bBack) bBack.href = 'tcm-software-showcase.html?clinic=' + encodeURIComponent(cName);
+                const bWa = document.getElementById('banner-wa-link');
+                if (bWa) bWa.href = 'https://wa.me/601155513221?text=' + encodeURIComponent('Hi 郭医师，我是【' + cName + '】，刚试用了贵院为我们定制的开单/收据/MC与4合1系统，想了解购买交付(RM99/RM199)');
+            }
+        });
+
+        watch(patients, (v) => localStorage.setItem('clinic_patients_v11', JSON.stringify(v)), { deep: true });
+        watch(invoices, (v) => localStorage.setItem('clinic_invoices_v11', JSON.stringify(v)), { deep: true });
+        watch(mcs, (v) => localStorage.setItem('clinic_mcs_v11', JSON.stringify(v)), { deep: true });
+        watch(transactions, (v) => localStorage.setItem('clinic_txns_v11', JSON.stringify(v)), { deep: true });
+        watch(settings, (v) => localStorage.setItem('clinic_settings_v11', JSON.stringify(v)), { deep: true });
+        watch(chatHistory, (v) => localStorage.setItem('clinic_chat_v13', JSON.stringify(v)), { deep: true });
+
+        // --- AI AGENT LOGIC (SCREEN READING & FUNCTION CALLING) ---
+        const scrollToBottom = () => {
+            nextTick(() => {
+                const box = document.getElementById('aiChatBox');
+                if (box) box.scrollTop = box.scrollHeight;
+            });
+        };
+
+        const clearChat = () => { if(confirm('Clear chat history?')) chatHistory.value = []; };
+
+        const getCommandList = (payload) => {
+            if (!payload) return [];
+            if (Array.isArray(payload)) return payload;
+            if (Array.isArray(payload.actions)) return payload.actions;
+            if (Array.isArray(payload.commands)) return payload.commands;
+            return [payload];
+        };
+
+        const normalizeAiAction = (action) => {
+            const key = normalizeText(action);
+            const aliases = {
+                createinvoice: 'createInvoice',
+                createbill: 'createInvoice',
+                createbilling: 'createInvoice',
+                addinvoice: 'createInvoice',
+                makeinvoice: 'createInvoice',
+                invoice: 'createInvoice',
+                bill: 'createInvoice',
+                createmc: 'createMC',
+                addmc: 'createMC',
+                writemc: 'createMC',
+                issuemc: 'createMC',
+                issuecertificate: 'createMC',
+                createmedicalcertificate: 'createMC',
+                medicalcertificate: 'createMC',
+                mc: 'createMC',
+                payinvoice: 'payInvoice',
+                paybill: 'payInvoice',
+                payment: 'payInvoice',
+                pay: 'payInvoice'
+            };
+            return aliases[key] || action;
+        };
+
+        const extractCommandPayloads = (reply) => {
+            const payloads = [];
+            const blockMatches = [...reply.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
+            blockMatches.forEach(match => payloads.push(match[1].trim()));
+
+            const trimmed = reply.trim();
+            if (!payloads.length && ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']')))) {
+                payloads.push(trimmed);
+            }
+
+            return payloads.map(payload => {
+                try { return JSON.parse(payload); }
+                catch (e) {
+                    console.error("Failed to parse AI JSON", e);
+                    return null;
+                }
+            }).filter(Boolean);
+        };
+
+        const stripCommandPayloads = (reply) => {
+            const stripped = reply.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '').trim();
+            if ((stripped.startsWith('{') && stripped.endsWith('}')) || (stripped.startsWith('[') && stripped.endsWith(']'))) return '';
+            return stripped;
+        };
+
+        const executeAiCommand = (cmd) => {
+            try {
+                const action = normalizeAiAction(cmd.action);
+                const data = cmd.data || {};
+
+                if (action === 'navigate') {
+                    if (!['patients', 'invoices', 'mcs', 'finances', 'settings'].includes(data.tab)) return false;
+                    currentTab.value = data.tab;
+                    chatHistory.value.push({ role: 'system', content: `System: Navigated to ${data.tab} tab.` });
+                    return action;
+                } else if (action === 'addPatient') {
+                    if (!data.name || !data.phone) {
+                        chatHistory.value.push({ role: 'system', content: 'System Error: Patient name and phone are required.' });
+                        return false;
+                    }
+                    patients.value.unshift({
+                        id: generateSafeId('P-'),
+                        name: data.name,
+                        phone: data.phone,
+                        gender: data.gender || '',
+                        age: data.age || '',
+                        idCard: data.idCard || '',
+                        address: data.address || '',
+                        notes: data.notes || ''
+                    });
+                    currentTab.value = 'patients';
+                    chatHistory.value.push({ role: 'system', content: `System: Patient ${data.name} added successfully.` });
+                    return action;
+                } else if (action === 'addExpense') {
+                    transactions.value.unshift({
+                        id: generateSafeId('TXN-'), date: new Date().toLocaleDateString(), type: 'Expense', 
+                        category: data.category, amount: Number(data.amount), desc: data.desc || 'Added by AI'
+                    });
+                    chatHistory.value.push({ role: 'system', content: `System: Expense of ${settings.value.currencySymbol}${Number(data.amount).toFixed(2)} added.` });
+                    currentTab.value = 'finances';
+                    return action;
+                } else if (action === 'createInvoice') {
+                    return createInvoiceFromAI(data) ? action : false;
+                } else if (action === 'createMC') {
+                    return createMCFromAI(data) ? action : false;
+                } else if (action === 'payInvoice') {
+                    return payInvoiceFromAI(data) ? action : false;
+                } else if (action === 'updateSetting') {
+                    if (settings.value[data.key] !== undefined) {
+                        settings.value[data.key] = data.value;
+                        chatHistory.value.push({ role: 'system', content: `System: Setting '${data.key}' updated to '${data.value}'.` });
+                        return action;
+                    }
+                }
+                chatHistory.value.push({ role: 'system', content: `System Error: Unknown AI action '${cmd.action}'.` });
+                return false;
+            } catch (e) {
+                console.error("Command execution failed", e);
+                chatHistory.value.push({ role: 'system', content: `System Error: ${e.message}` });
+                return false;
+            }
+        };
+
+        const sendChatMessage = async () => {
+            if (!chatInput.value.trim() || isAiTyping.value) return;
+            
+            const userText = chatInput.value.trim();
+            chatHistory.value.push({ role: 'user', content: userText });
+            chatInput.value = '';
+            isAiTyping.value = true;
+            scrollToBottom();
+
+            const aiConfig = settings.value.ai;
+            if (!aiConfig.apiKey) {
+                const localCommand = inferLocalCommand(userText);
+                if (localCommand && executeAiCommand(localCommand)) {
+                    chatHistory.value.push({ role: 'ai', content: '已完成。' });
+                } else {
+                    chatHistory.value.push({ role: 'ai', content: '⚠️ Please configure your API Key in the Settings tab first.' });
+                }
+                isAiTyping.value = false;
+                scrollToBottom();
+                return;
+            }
+
+            try {
+                const patientNames = patients.value.map(p => `${p.name}${p.phone ? ` (${p.phone})` : ''}`).join(', ');
+                const itemsList = settings.value.billingItems.map(i => `${i.name}(${i.price})`).join(', ');
+                
+                // FIX: Inject Unpaid Invoices into Context
+                const unpaidList = invoices.value
+                    .filter(inv => getInvoiceStatus(inv) !== 'Paid')
+                    .map(inv => `${getPatientName(inv.patientId)} owes ${inv.total - getPaidAmount(inv)}`)
+                    .join(', ');
+
+                const systemPrompt = `${defaultAiPersona}
+
+The JSON command rules above are mandatory and override any older/custom instructions below.
+If the user asks to create an invoice, bill, 开单, 发票, or add billable items, output createInvoice.
+If the user asks to issue MC, medical certificate, 病假单, or 休息建议, output createMC.
+If the user says someone paid, used cash/visa, 付款了, output payInvoice.
+Do not answer that you cannot directly create invoices or MCs; this app can execute those JSON commands.
+
+User custom instructions:
+${aiConfig.persona || ''}
+`;
+                const contextStr = `[SYSTEM CONTEXT: 
+                Current tab: '${currentTab.value}'. 
+                Today: ${getLocalDateInput()}.
+                Available Patients: ${patientNames || 'None'}. 
+                Predefined Items & Prices: ${itemsList || 'None'}.
+                Unpaid Patients: ${unpaidList || 'None'}.]`;
+                
+                let reply = '';
+                
+                if (aiConfig.provider === 'openai' || aiConfig.provider === 'deepseek') {
+                    const baseUrl = aiConfig.provider === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://api.deepseek.com/chat/completions';
+                    const messages = [{ role: 'system', content: systemPrompt + "\n" + contextStr }];
+                    chatHistory.value.forEach(msg => {
+                        if (msg.role !== 'system') messages.push({ role: msg.role === 'user' ? 'user' : 'assistant', content: msg.content });
+                    });
+
+                    const res = await fetch(baseUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+                        body: JSON.stringify({ model: aiConfig.model, messages: messages })
+                    });
+                    
+                    if (!res.ok) throw new Error(`API Error: ${res.status}`);
+                    const data = await res.json();
+                    reply = data.choices[0].message.content;
+                } 
+                else if (aiConfig.provider === 'gemini') {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${aiConfig.model}:generateContent?key=${aiConfig.apiKey}`;
+                    const contents = chatHistory.value.filter(m => m.role !== 'system').map(msg => ({
+                        role: msg.role === 'user' ? 'user' : 'model',
+                        parts: [{ text: msg.content }]
+                    }));
+                    if(contents.length > 0) contents[contents.length-1].parts[0].text += `\n\n${contextStr}`;
+
+                    const body = { system_instruction: { parts: { text: systemPrompt } }, contents: contents };
+                    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    if (!res.ok) throw new Error(`API Error: ${res.status}`);
+                    const data = await res.json();
+                    reply = data.candidates[0].content.parts[0].text;
+                }
+
+                const executedActions = [];
+                const commandPayloads = extractCommandPayloads(reply);
+                commandPayloads.forEach(payload => {
+                    getCommandList(payload).forEach(command => {
+                        const executed = executeAiCommand(command);
+                        if (executed) executedActions.push(executed);
+                    });
+                });
+
+                const localCommand = inferLocalCommand(userText);
+                let usedLocalFallback = false;
+                if (localCommand && !executedActions.includes(localCommand.action)) {
+                    const executed = executeAiCommand(localCommand);
+                    if (executed) {
+                        executedActions.push(executed);
+                        usedLocalFallback = true;
+                    }
+                }
+
+                if (commandPayloads.length > 0) {
+                    reply = stripCommandPayloads(reply);
+                }
+
+                if (executedActions.length > 0) {
+                    const actionLabel = executedActions.includes('createInvoice') ? '开单'
+                        : executedActions.includes('createMC') ? 'MC'
+                        : executedActions.includes('payInvoice') ? '收款'
+                        : executedActions.includes('addPatient') ? '新增患者'
+                        : '操作';
+                    if (usedLocalFallback || !reply || /cannot|unable|can't|无法|不能|请您|請您|please manually|click/i.test(reply)) {
+                        reply = `已完成${actionLabel}。`;
+                    }
+                }
+
+                chatHistory.value.push({ role: 'ai', content: reply });
+
+            } catch (error) {
+                chatHistory.value.push({ role: 'ai', content: `❌ Error: ${error.message}.` });
+            } finally {
+                isAiTyping.value = false;
+                scrollToBottom();
+            }
+        };
+
+        // --- STANDARD LOGIC ---
+        const filteredPatients = computed(() => {
+            if (!searchQuery.value) return patients.value;
+            const q = searchQuery.value.toLowerCase();
+            return patients.value.filter(p => p.name.toLowerCase().includes(q) || p.phone.includes(q));
+        });
+        
+        const getPatientTotalSpent = (id) => invoices.value.filter(inv => inv.patientId === id).reduce((sum, inv) => sum + inv.total, 0);
+        
+        const addPatient = () => {
+            if(!newPatient.value.name || !newPatient.value.phone) return alert("Name and Phone are required.");
+            patients.value.unshift({ id: generateSafeId('P-'), ...newPatient.value });
+            newPatient.value = { name: '', gender: '', age: '', phone: '', idCard: '', address: '', notes: '' };
+            showPatientForm.value = false;
+        };
+
+        // --- DELETE LOGIC ---
+        const deleteSelectedPatients = () => {
+            if(confirm(`Are you sure you want to delete ${selectedPatients.value.length} patient(s)? This cannot be undone.`)) {
+                patients.value = patients.value.filter(p => !selectedPatients.value.includes(p.id));
+                selectedPatients.value = [];
+            }
+        };
+
+        const deleteInvoice = (id) => {
+            if(confirm('Are you sure you want to delete this invoice?')) {
+                invoices.value = invoices.value.filter(inv => inv.id !== id);
+            }
+        };
+
+        const deleteMC = (id) => {
+            if(confirm('Are you sure you want to delete this MC?')) {
+                mcs.value = mcs.value.filter(mc => mc.id !== id);
+            }
+        };
+
+        const getPatientName = (id) => { const p = patients.value.find(p => p.id === id); return p ? p.name : 'Unknown'; };
+        const getPatientPhone = (id) => { const p = patients.value.find(p => p.id === id); return p ? p.phone : ''; };
+        const getPatientAddress = (id) => { const p = patients.value.find(p => p.id === id); return p ? p.address : ''; };
+        const getPatientIdCard = (id) => { const p = patients.value.find(p => p.id === id); return p ? p.idCard : ''; };
+        const getPatientAge = (id) => { const p = patients.value.find(p => p.id === id); return p ? p.age : ''; };
+        const getPatientGender = (id) => { const p = patients.value.find(p => p.id === id); return p ? p.gender : ''; };
+
+        const goToCreateInvoice = (id) => { currentTab.value = 'invoices'; isCreatingInvoice.value = true; newInvoice.value = { patientId: id, items: [{desc: '', price: 0, qty: 1}] }; };
+        const autoFillPrice = (item) => { const found = settings.value.billingItems.find(b => b.name === item.desc); if (found) item.price = found.price; };
+        
+        const calculateNewInvoiceTotal = () => {
+            return newInvoice.value.items.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.qty) || 1)), 0);
+        };
+        
+        const saveInvoice = () => {
+            if (!newInvoice.value.patientId) return alert('Please select a patient.');
+            const invoiceTotal = calculateNewInvoiceTotal();
+            if(invoiceTotal <= 0) return alert('Invoice total must be greater than 0.');
+
+            const customId = settings.value.invoicePrefix + settings.value.invoiceNextNum;
+            settings.value.invoiceNextNum++; 
+
+            invoices.value.unshift({ 
+                id: customId, 
+                patientId: newInvoice.value.patientId, 
+                doctorName: settings.value.doctorName,
+                date: new Date().toLocaleDateString(), 
+                createdAt: new Date().toISOString(),
+                items: JSON.parse(JSON.stringify(newInvoice.value.items)), 
+                total: invoiceTotal, 
+                payments: [], 
+                receiptId: null 
+            });
+            isCreatingInvoice.value = false;
+        };
+
+        const getPaidAmount = (inv) => inv.payments ? inv.payments.reduce((sum, p) => sum + p.amount, 0) : 0;
+        const getInvoiceStatus = (inv) => { const paid = getPaidAmount(inv); return paid === 0 ? 'Unpaid' : (paid < inv.total ? 'Partial' : 'Paid'); };
+        const getInvoiceStatusClass = (inv) => { const s = getInvoiceStatus(inv); return s === 'Paid' ? 'badge-success' : (s === 'Partial' ? 'badge-warning' : 'badge-danger'); };
+        
+        const openPaymentModal = (inv) => {
+            if (getInvoiceStatus(inv) === 'Paid') return alert('This invoice is already paid.');
+            currentInvoice.value = inv; 
+            paymentForm.value.amount = Number((inv.total - getPaidAmount(inv)).toFixed(2)); 
+            showPaymentModal.value = true;
+        };
+        
+        const savePayment = () => {
+            const amount = Number(paymentForm.value.amount);
+            const maxAllowed = currentInvoice.value.total - getPaidAmount(currentInvoice.value);
+            
+            if(amount <= 0 || amount > maxAllowed) return alert('Invalid payment amount. Cannot exceed balance due.');
+
+            const dateStr = new Date().toLocaleDateString();
+            currentInvoice.value.payments.push({ date: dateStr, createdAt: new Date().toISOString(), amount: amount, method: paymentForm.value.method });
+            
+            if (getInvoiceStatus(currentInvoice.value) === 'Paid' && !currentInvoice.value.receiptId) {
+                currentInvoice.value.receiptId = settings.value.receiptPrefix + settings.value.receiptNextNum;
+                settings.value.receiptNextNum++;
+            }
+
+            transactions.value.unshift({
+                id: generateSafeId('TXN-'),
+                date: dateStr,
+                type: 'Income',
+                category: 'Invoice Payment',
+                amount: amount,
+                desc: `Payment for ${currentInvoice.value.id} (${paymentForm.value.method})`
+            });
+
+            showPaymentModal.value = false;
+        };
+
+        const goToCreateMC = (id) => { 
+            currentTab.value = 'mcs'; isCreatingMC.value = true; 
+            newMC.value = { patientId: id, mode: 'In-person', complaint: '', assessment: '', startDate: '', endDate: '', days: 0, reasonType: 'Fever / flu-like symptoms', reasonOther: '' }; 
+        };
+        
+        const calculateMCDays = () => {
+            if (newMC.value.startDate && newMC.value.endDate) {
+                const start = new Date(newMC.value.startDate); const end = new Date(newMC.value.endDate);
+                const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1; 
+                newMC.value.days = diffDays > 0 ? diffDays : 0;
+            }
+        };
+
+        const saveMC = () => {
+            if (!newMC.value.patientId || !newMC.value.startDate || !newMC.value.endDate) return alert('Please fill all required fields.');
+            if (newMC.value.days <= 0) return alert('End date cannot be earlier than start date.');
+
+            const customId = settings.value.mcPrefix + settings.value.mcNextNum;
+            settings.value.mcNextNum++; 
+
+            mcs.value.unshift({
+                id: customId, patientId: newMC.value.patientId, issueDate: new Date().toLocaleDateString(),
+                createdAt: new Date().toISOString(),
+                mode: newMC.value.mode, complaint: newMC.value.complaint, assessment: newMC.value.assessment,
+                startDate: newMC.value.startDate, endDate: newMC.value.endDate, days: newMC.value.days,
+                reasonType: newMC.value.reasonType, reasonOther: newMC.value.reasonOther
+            });
+            isCreatingMC.value = false;
+        };
+
+        const totalIncome = computed(() => transactions.value.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0));
+        const totalExpense = computed(() => transactions.value.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0));
+
+        const getStatsByFilter = (filterFn) => {
+            const filteredTxns = transactions.value.filter(t => filterFn(new Date(t.date)));
+            const income = filteredTxns.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
+            const expense = filteredTxns.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0);
+            return { income, expense, net: income - expense };
+        };
+
+        const currentMonthStats = computed(() => {
+            const now = new Date();
+            return getStatsByFilter(d => d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear());
+        });
+
+        const currentWeekStats = computed(() => {
+            const now = new Date();
+            const start = new Date(now);
+            start.setDate(now.getDate() - now.getDay()); 
+            start.setHours(0,0,0,0);
+            const end = new Date(start);
+            end.setDate(start.getDate() + 6); 
+            end.setHours(23,59,59,999);
+            return getStatsByFilter(d => d >= start && d <= end);
+        });
+
+        const topPatients = computed(() => {
+            return patients.value.map(p => ({ ...p, totalSpent: getPatientTotalSpent(p.id) }))
+                .filter(p => p.totalSpent > 0)
+                .sort((a, b) => b.totalSpent - a.totalSpent)
+                .slice(0, 10);
+        });
+
+        const topProducts = computed(() => {
+            const productMap = {};
+            invoices.value.forEach(inv => {
+                inv.items.forEach(item => {
+                    if(!item.desc) return;
+                    if (!productMap[item.desc]) productMap[item.desc] = { name: item.desc, revenue: 0, qty: 0 };
+                    productMap[item.desc].revenue += (Number(item.price) * Number(item.qty));
+                    productMap[item.desc].qty += Number(item.qty);
+                });
+            });
+            return Object.values(productMap)
+                .sort((a, b) => b.revenue - a.revenue)
+                .slice(0, 10);
+        });
+
+        const addTransaction = () => {
+            if (newTxn.value.amount <= 0 || !newTxn.value.category) return alert('Please enter a valid amount and category.');
+            transactions.value.unshift({
+                id: generateSafeId('TXN-'),
+                date: new Date().toLocaleDateString(),
+                type: 'Expense', 
+                category: newTxn.value.category,
+                amount: Number(newTxn.value.amount),
+                desc: newTxn.value.desc
+            });
+            newTxn.value = { type: 'Expense', amount: 0, category: '', desc: '' };
+        };
+
+        const deleteTransaction = (id) => {
+            if(confirm('Delete this record?')) {
+                transactions.value = transactions.value.filter(t => t.id !== id);
+            }
+        };
+
+        // --- DATA BACKUP & RESTORE ---
+        const exportGlobalBackup = () => {
+            const backupData = {
+                settings: settings.value,
+                patients: patients.value,
+                invoices: invoices.value,
+                mcs: mcs.value,
+                transactions: transactions.value,
+                chatHistory: chatHistory.value,
+                exportDate: new Date().toISOString()
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const link = document.createElement("a");
+            link.setAttribute("href", dataStr);
+            link.setAttribute("download", `Clinic_Backup_${new Date().getTime()}.json`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        const importGlobalBackup = () => {
+            const fileInput = document.getElementById('backupFile');
+            const file = fileInput.files[0];
+            if (!file) return alert('Please select a .json backup file first.');
+
+            if (!confirm('WARNING: This will overwrite all current data. Are you sure?')) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.settings) settings.value = data.settings;
+                    if (data.patients) patients.value = data.patients;
+                    if (data.invoices) invoices.value = data.invoices;
+                    if (data.mcs) mcs.value = data.mcs;
+                    if (data.transactions) transactions.value = data.transactions;
+                    if (data.chatHistory) chatHistory.value = data.chatHistory;
+                    alert('Backup restored successfully!');
+                    fileInput.value = ''; 
+                } catch (err) {
+                    alert('Invalid backup file format.');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        const generatePDF = async (type, data) => {
+            isGeneratingPDF.value = true;
+            pdfType.value = type;
+            pdfData.value = data;
+            pdfSignature.value = type === 'mc' ? buildESignatureRecord(data) : null;
+
+            window.scrollTo(0, 0);
+            await nextTick();
+
+            try {
+                const element = document.getElementById('pdf-export-container');
+                if (!element) throw new Error('Error mapping PDF template.');
+
+                if (document.fonts && document.fonts.ready) await document.fonts.ready;
+                await waitForPdfImages(element);
+                await new Promise(resolve => setTimeout(resolve, 250));
+
+                const isInvoice = type === 'invoice';
+                const pageFormat = isInvoice ? 'a4' : 'a5';
+                const orientation = isInvoice ? 'portrait' : 'landscape';
+                const prefix = isInvoice ? (getInvoiceStatus(data) === 'Paid' ? 'RECEIPT' : 'INVOICE') : 'MC';
+                const filename = `${prefix}_${data.receiptId || data.id}.pdf`;
+
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: element.scrollWidth,
+                    windowHeight: element.scrollHeight
+                });
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ unit: 'mm', format: pageFormat, orientation });
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                fitPdfToSinglePage(pdf, canvas, pageWidth, pageHeight, 0);
+                pdf.save(filename);
+            } catch (err) {
+                console.error("PDF Export Error: ", err);
+                alert(err.message || "PDF export failed. Please check console.");
+            } finally {
+                isGeneratingPDF.value = false;
+                pdfData.value = null;
+                pdfSignature.value = null;
+            }
+        };
+
+        return {
+            currentTab, patients, invoices, mcs, transactions, filteredPatients, searchQuery, settings,
+            showPatientForm, newPatient, addPatient, getPatientName, getPatientPhone, getPatientAddress, getPatientIdCard, getPatientAge, getPatientGender, getPatientTotalSpent,
+            selectedPatients, selectAllPatients, deleteSelectedPatients, deleteInvoice, deleteMC,
+            isCreatingInvoice, newInvoice, goToCreateInvoice, autoFillPrice, calculateNewInvoiceTotal, saveInvoice,
+            getPaidAmount, getInvoiceStatus, getInvoiceStatusClass, showPaymentModal, currentInvoice, paymentForm, openPaymentModal, savePayment,
+            isCreatingMC, newMC, goToCreateMC, calculateMCDays, saveMC,
+            newTxn, addTransaction, deleteTransaction, totalIncome, totalExpense,
+            currentWeekStats, currentMonthStats, topPatients, topProducts,
+            generatePDF, pdfType, pdfData, pdfSignature, isGeneratingPDF,
+            getLastPayment, formatMoney, formatDateTime, formatStoredDateTime, formatShortDate,
+            isAiSidebarOpen, chatHistory, chatInput, isAiTyping, sendChatMessage, clearChat, availableModels,
+            exportGlobalBackup, importGlobalBackup
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
